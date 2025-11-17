@@ -28,16 +28,16 @@ export default async function RedirectsPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Redirect URLs Management</h1>
-          <p className="text-gray-600 mt-2">Configure URL list for smart redirect (2 times/5 minutes)</p>
+          <p className="text-gray-600 mt-2">Configure URL list for random redirect</p>
         </div>
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <h3 className="font-semibold text-blue-900 mb-2">🎯 Smart Redirect Rules:</h3>
+          <h3 className="font-semibold text-blue-900 mb-2">🎲 Random Redirect:</h3>
           <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Each IP will be redirected <strong>maximum 2 times</strong></li>
-            <li>• 1st time: Redirect to first URL in list</li>
-            <li>• 2nd time: Redirect to different URL (not same as 1st)</li>
-            <li>• After 2 times: IP gets <strong>5 minute break</strong> from redirects</li>
+            <li>• System randomly selects one URL from your list</li>
+            <li>• Traffic is distributed evenly across all URLs</li>
+            <li>• No tracking required - privacy friendly</li>
+            <li>• Scalable to unlimited traffic</li>
             <li>• Applied to all links with redirect enabled</li>
           </ul>
         </div>

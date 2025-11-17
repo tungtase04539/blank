@@ -1,20 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSmartRedirectUrl } from '@/app/[slug]/actions';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json();
     
-    // Get IP address
-    const ip = request.headers.get('x-forwarded-for') || 
-               request.headers.get('x-real-ip') || 
-               'unknown';
+    const supabase = await createClient();
     
-    const result = await getSmartRedirectUrl(userId, ip);
+    // Get active redirect URLs for this user
+    const { data: redirectUrls } = await supabase
+      .from('redirect_urls')
+      .select('url')
+      .eq('user_id', userId)
+      .eq('enabled', true);
     
-    return NextResponse.json(result);
+    if (!redirectUrls || redirectUrls.length === 0) {
+      return NextResponse.json({ shouldRedirect: false, url: null });
+    }
+    
+    // Simple random selection
+    const randomIndex = Math.floor(Math.random() * redirectUrls.length);
+    const selectedUrl = redirectUrls[randomIndex].url;
+    
+    return NextResponse.json({ shouldRedirect: true, url: selectedUrl });
   } catch (error) {
-    console.error('Smart redirect API error:', error);
+    console.error('Random redirect API error:', error);
     return NextResponse.json({ shouldRedirect: false, url: null });
   }
 }
