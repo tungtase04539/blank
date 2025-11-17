@@ -63,17 +63,17 @@ export default async function StatisticsPage() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Thống Kê Traffic</h1>
-          <p className="text-gray-600 mt-2">Xem chi tiết traffic tháng {stats.month}</p>
+          <h1 className="text-3xl font-bold text-gray-900">Traffic Statistics</h1>
+          <p className="text-gray-600 mt-2">View detailed traffic for month {stats.month}</p>
         </div>
         
         {/* Monthly Summary */}
         <div className="card mb-8 bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-indigo-100 text-sm font-medium">Tổng Traffic Tháng {stats.month}</p>
+              <p className="text-indigo-100 text-sm font-medium">Total Traffic Month {stats.month}</p>
               <p className="text-5xl font-bold mt-2">{stats.totalVisits.toLocaleString()}</p>
-              <p className="text-indigo-100 text-sm mt-2">lượt truy cập</p>
+              <p className="text-indigo-100 text-sm mt-2">visits</p>
             </div>
             <div className="text-8xl opacity-20">📊</div>
           </div>
@@ -81,7 +81,7 @@ export default async function StatisticsPage() {
         
         {/* Link Statistics Table */}
         <div className="card">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Chi Tiết Theo Link</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Details by Link</h2>
           
           {stats.linkStats.length > 0 ? (
             <div className="overflow-x-auto">
@@ -90,8 +90,8 @@ export default async function StatisticsPage() {
                   <tr className="border-b-2 border-gray-200">
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">#</th>
                     <th className="text-left py-3 px-4 font-semibold text-gray-700">Link</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Lượt Truy Cập</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">% Tổng</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Visits</th>
+                    <th className="text-right py-3 px-4 font-semibold text-gray-700">% Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -131,7 +131,7 @@ export default async function StatisticsPage() {
               </table>
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-8">Chưa có dữ liệu traffic trong tháng này</p>
+            <p className="text-gray-500 text-center py-8">No traffic data for this month</p>
           )}
         </div>
       </main>

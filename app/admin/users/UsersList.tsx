@@ -45,7 +45,7 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
   };
 
   const handleDelete = async (userId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa user này?')) return;
+    if (!confirm('Are you sure you want to delete this user?')) return;
     
     setDeleting(userId);
     await deleteUserAction(userId);
@@ -61,12 +61,12 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
             onClick={() => setShowForm(true)}
             className="btn btn-primary w-full"
           >
-            + Tạo User Mới
+            + Create New User
           </button>
         </div>
       ) : (
         <div className="card mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tạo User Mới</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New User</h3>
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -143,7 +143,7 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
                 className="btn btn-primary flex-1"
                 disabled={loading}
               >
-                {loading ? 'Đang tạo...' : 'Tạo User'}
+                {loading ? 'Creating...' : 'Create User'}
               </button>
               <button
                 type="button"
@@ -163,7 +163,7 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
 
       {/* Users List */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Danh Sách Users</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">User List</h3>
         
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -200,10 +200,10 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
                         disabled={deleting === user.id}
                         className="btn btn-danger text-sm"
                       >
-                        {deleting === user.id ? 'Đang xóa...' : 'Xóa'}
+                        {deleting === user.id ? 'Deleting...' : 'Delete'}
                       </button>
                     ) : (
-                      <span className="text-sm text-gray-400">Bạn</span>
+                      <span className="text-sm text-gray-400">You</span>
                     )}
                   </td>
                 </tr>

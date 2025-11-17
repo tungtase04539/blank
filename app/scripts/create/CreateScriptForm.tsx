@@ -96,7 +96,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
           disabled={loading}
         />
         <p className="text-sm text-gray-500 mt-1">
-          Nhập code HTML/JavaScript (bao gồm cả thẻ &lt;script&gt;)
+          Enter HTML/JavaScript code (including &lt;script&gt; tags)
         </p>
       </div>
 
@@ -125,7 +125,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
           className="btn btn-primary flex-1"
           disabled={loading}
         >
-          {loading ? 'Đang tạo...' : 'Tạo Script'}
+          {loading ? 'Creating...' : 'Create Script'}
         </button>
         <button
           type="button"
@@ -133,7 +133,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
           className="btn btn-secondary"
           disabled={loading}
         >
-          Hủy
+          Cancel
         </button>
       </div>
     </form>

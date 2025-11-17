@@ -73,12 +73,12 @@ export default function RedirectsList({ urls, userId }: RedirectsListProps) {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Thêm Redirect URL Mới</span>
+            <span>Add New Redirect URL</span>
           </button>
         </div>
       ) : (
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Thêm URL Mới</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New URL</h3>
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
@@ -108,7 +108,7 @@ export default function RedirectsList({ urls, userId }: RedirectsListProps) {
                 className="btn btn-primary flex-1"
                 disabled={loading}
               >
-                {loading ? 'Đang thêm...' : '+ Thêm URL'}
+                {loading ? 'Adding...' : '+ Add URL'}
               </button>
               <button
                 type="button"
@@ -129,11 +129,11 @@ export default function RedirectsList({ urls, userId }: RedirectsListProps) {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
         <div className="card bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-          <div className="text-blue-100 text-sm font-medium mb-1">Tổng URLs</div>
+          <div className="text-blue-100 text-sm font-medium mb-1">Total URLs</div>
           <div className="text-3xl font-bold">{urls.length}</div>
         </div>
         <div className="card bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-          <div className="text-green-100 text-sm font-medium mb-1">URLs Đang Hoạt Động</div>
+          <div className="text-green-100 text-sm font-medium mb-1">Active URLs</div>
           <div className="text-3xl font-bold">{enabledUrls.length}</div>
         </div>
       </div>
@@ -184,7 +184,7 @@ export default function RedirectsList({ urls, userId }: RedirectsListProps) {
                     disabled={deleting === url.id}
                     className="btn btn-danger text-sm"
                   >
-                    {deleting === url.id ? '...' : 'Xóa'}
+                    {deleting === url.id ? '...' : 'Delete'}
                   </button>
                 </div>
               </div>
@@ -193,8 +193,8 @@ export default function RedirectsList({ urls, userId }: RedirectsListProps) {
         ) : (
           <div className="text-center py-12">
             <div className="text-5xl mb-4">🔗</div>
-            <p className="text-gray-600">Chưa có redirect URL nào</p>
-            <p className="text-sm text-gray-500 mt-2">Thêm URLs để bắt đầu sử dụng smart redirect</p>
+            <p className="text-gray-600">No redirect URLs yet</p>
+            <p className="text-sm text-gray-500 mt-2">Add URLs to start using smart redirect</p>
           </div>
         )}
       </div>
