@@ -37,10 +37,10 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
       if (result.success) {
         router.push('/links');
       } else {
-        setError(result.error || 'Không thể cập nhật link');
+        setError(result.error || 'Failed to update link');
       }
     } catch (err) {
-      setError('Có lỗi xảy ra');
+      setError('An error occurred');
     } finally {
       setLoading(false);
     }
@@ -50,7 +50,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Slug (URL ngắn)
+          Slug (Short URL)
         </label>
         <div className="flex items-center">
           <span className="text-gray-500 mr-2">/</span>
@@ -61,7 +61,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
             disabled
           />
         </div>
-        <p className="text-sm text-gray-500 mt-1">Slug không thể thay đổi</p>
+        <p className="text-sm text-gray-500 mt-1">Slug cannot be changed</p>
       </div>
 
       <div>
@@ -78,11 +78,11 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
           required
           disabled={loading}
         />
-        <p className="text-sm text-gray-500 mt-1">URL của video (định dạng WebM)</p>
+        <p className="text-sm text-gray-500 mt-1">Video URL (WebM format)</p>
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Buttons Ở Bottom (Tùy chọn)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bottom Buttons (Optional)</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
@@ -118,7 +118,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Cài Đặt Redirect (Tùy chọn)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Redirect Settings (Optional)</h3>
         
         <div className="mb-4">
           <label className="flex items-center space-x-3 cursor-pointer">
@@ -136,7 +136,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
         {redirectEnabled && (
           <div>
             <label htmlFor="destinationUrl" className="block text-sm font-medium text-gray-700 mb-2">
-              URL đích
+              Destination URL
             </label>
             <input
               id="destinationUrl"
@@ -147,7 +147,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
               placeholder="https://example.com/destination"
               disabled={loading}
             />
-            <p className="text-sm text-gray-500 mt-1">Người xem sẽ được chuyển hướng đến URL này</p>
+            <p className="text-sm text-gray-500 mt-1">Visitors will be redirected to this URL</p>
           </div>
         )}
       </div>
@@ -164,7 +164,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
           className="btn btn-primary flex-1"
           disabled={loading}
         >
-          {loading ? 'Đang cập nhật...' : 'Cập Nhật Link'}
+          {loading ? 'Updating...' : 'Update Link'}
         </button>
         <button
           type="button"
@@ -172,7 +172,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
           className="btn btn-secondary"
           disabled={loading}
         >
-          Hủy
+          Cancel
         </button>
       </div>
     </form>
