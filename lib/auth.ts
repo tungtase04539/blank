@@ -42,6 +42,8 @@ export async function requireAdmin() {
 export async function login(email: string, password: string) {
   const supabase = await createClient();
 
+  console.log('🔍 LOGIN ATTEMPT:', { email });
+
   // Get user from database
   const { data: user, error } = await supabase
     .from('users')
@@ -49,25 +51,43 @@ export async function login(email: string, password: string) {
     .eq('email', email)
     .single();
 
+  console.log('📊 USER QUERY:', { 
+    found: !!user, 
+    error: error?.message,
+    userExists: user ? 'YES' : 'NO'
+  });
+
   if (error || !user) {
+    console.log('❌ USER NOT FOUND IN DB');
     return { success: false, error: 'Invalid credentials' };
   }
 
   // Verify password
+  console.log('🔐 CHECKING PASSWORD...');
   const isValidPassword = await bcrypt.compare(password, user.password_hash);
+  console.log('🔐 PASSWORD VALID:', isValidPassword);
+  
   if (!isValidPassword) {
+    console.log('❌ PASSWORD MISMATCH');
     return { success: false, error: 'Invalid credentials' };
   }
 
   // Create session using Supabase Auth
   // Try to sign in first
+  console.log('🔑 TRYING AUTH SIGNIN...');
   let authResult = await supabase.auth.signInWithPassword({
     email,
     password: user.id,
   });
 
+  console.log('🔑 AUTH SIGNIN RESULT:', { 
+    success: !authResult.error,
+    error: authResult.error?.message 
+  });
+
   // If user doesn't exist in Auth, create them with auto-confirm
   if (authResult.error) {
+    console.log('📝 USER NOT IN AUTH.USERS, CREATING...');
     const signUpResult = await supabase.auth.signUp({
       email,
       password: user.id,
@@ -79,23 +99,35 @@ export async function login(email: string, password: string) {
       }
     });
 
+    console.log('📝 SIGNUP RESULT:', { 
+      success: !signUpResult.error,
+      error: signUpResult.error?.message 
+    });
+
     if (signUpResult.error) {
-      console.error('SignUp error:', signUpResult.error);
+      console.error('❌ SignUp error:', signUpResult.error);
       return { success: false, error: 'Authentication failed: ' + signUpResult.error.message };
     }
 
     // Try to sign in again after signup
+    console.log('🔑 RETRYING SIGNIN AFTER SIGNUP...');
     authResult = await supabase.auth.signInWithPassword({
       email,
       password: user.id,
     });
 
+    console.log('🔑 RETRY RESULT:', { 
+      success: !authResult.error,
+      error: authResult.error?.message 
+    });
+
     if (authResult.error) {
-      console.error('SignIn error after signup:', authResult.error);
+      console.error('❌ SignIn error after signup:', authResult.error);
       return { success: false, error: 'Authentication failed: ' + authResult.error.message };
     }
   }
 
+  console.log('✅ LOGIN SUCCESS!');
   return { success: true, user };
 }
 
