@@ -110,11 +110,11 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
             className="btn btn-secondary whitespace-nowrap"
             disabled={loading}
           >
-            🔄 Tạo mới
+            🔄 Generate
           </button>
         </div>
         <p className="text-sm text-gray-500 mt-1">
-          Format: 5 ký tự ngẫu nhiên + "mp4" (VD: {slug})
+          Format: 5 random characters + "mp4" (Example: {slug})
         </p>
       </div>
 
@@ -137,12 +137,12 @@ https://example.com/video3.webm
           disabled={loading}
         />
         <p className="text-sm text-gray-500 mt-1">
-          Nhập mỗi URL một dòng. Nếu nhiều URLs → tự động tạo nhiều links với slug random
+          Enter one URL per line. Multiple URLs → automatically create multiple links with random slugs
         </p>
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Buttons Ở Bottom (Tùy chọn)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bottom Buttons (Optional)</h3>
         
         <div className="mb-4">
           <label className="flex items-center space-x-3 cursor-pointer">
@@ -154,7 +154,7 @@ https://example.com/video3.webm
               disabled={loading}
             />
             <span className="text-sm font-medium text-gray-700">
-              Sử dụng buttons riêng cho link này (mặc định dùng global settings)
+              Use custom buttons for this link (default uses global settings)
             </span>
           </label>
         </div>
@@ -195,8 +195,8 @@ https://example.com/video3.webm
         
         {!useCustomButtons && (
           <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-            💡 Link này sẽ sử dụng buttons từ <strong>Global Settings</strong>. 
-            Vào menu <strong>Settings</strong> để cấu hình buttons chung cho tất cả links.
+            💡 This link will use buttons from <strong>Global Settings</strong>. 
+            Go to <strong>Settings</strong> menu to configure common buttons for all links.
           </p>
         )}
       </div>
@@ -213,7 +213,7 @@ https://example.com/video3.webm
               className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
               disabled={loading}
             />
-            <span className="text-sm font-medium text-gray-700">Bật redirect tự động</span>
+            <span className="text-sm font-medium text-gray-700">Enable auto redirect</span>
           </label>
         </div>
 
@@ -248,7 +248,7 @@ https://example.com/video3.webm
           className="btn btn-primary flex-1"
           disabled={loading}
         >
-          {loading ? 'Đang tạo...' : 'Tạo Link'}
+          {loading ? 'Creating...' : 'Create Link'}
         </button>
         <button
           type="button"
@@ -256,7 +256,7 @@ https://example.com/video3.webm
           className="btn btn-secondary"
           disabled={loading}
         >
-          Hủy
+          Cancel
         </button>
       </div>
     </form>
