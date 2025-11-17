@@ -32,14 +32,14 @@ export default function SettingsForm({ userId, initialSettings }: SettingsFormPr
       });
 
       if (result.success) {
-        setSuccess('✓ Settings đã được lưu thành công!');
+        setSuccess('✓ Settings saved successfully!');
         router.refresh();
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(result.error || 'Không thể lưu settings');
+        setError(result.error || 'Cannot save settings');
       }
     } catch (err) {
-      setError('Có lỗi xảy ra');
+      setError('An error occurred');
     } finally {
       setLoading(false);
     }
@@ -100,7 +100,7 @@ export default function SettingsForm({ userId, initialSettings }: SettingsFormPr
         className="btn btn-primary w-full"
         disabled={loading}
       >
-        {loading ? 'Đang lưu...' : '💾 Lưu Settings'}
+        {loading ? 'Saving...' : '💾 Save Settings'}
       </button>
     </form>
   );

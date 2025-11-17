@@ -37,10 +37,10 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
       if (result.success) {
         router.push('/links');
       } else {
-        setError(result.error || 'Không thể cập nhật link');
+        setError(result.error || 'Cannot update link');
       }
     } catch (err) {
-      setError('Có lỗi xảy ra');
+      setError('An error occurred');
     } finally {
       setLoading(false);
     }
@@ -164,7 +164,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
           className="btn btn-primary flex-1"
           disabled={loading}
         >
-          {loading ? 'Đang cập nhật...' : 'Cập Nhật Link'}
+          {loading ? 'Updating...' : 'Update Link'}
         </button>
         <button
           type="button"
@@ -172,7 +172,7 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
           className="btn btn-secondary"
           disabled={loading}
         >
-          Hủy
+          Cancel
         </button>
       </div>
     </form>

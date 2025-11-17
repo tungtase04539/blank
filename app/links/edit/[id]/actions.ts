@@ -38,7 +38,7 @@ export async function updateLinkAction(data: UpdateLinkData) {
     revalidatePath('/links');
     return { success: true };
   } catch (error) {
-    return { success: false, error: 'Có lỗi xảy ra' };
+    return { success: false, error: 'An error occurred' };
   }
 }
 

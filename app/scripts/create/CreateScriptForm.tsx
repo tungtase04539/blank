@@ -32,10 +32,10 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
       if (result.success) {
         router.push('/scripts');
       } else {
-        setError(result.error || 'Không thể tạo script');
+        setError(result.error || 'Cannot create script');
       }
     } catch (err) {
-      setError('Có lỗi xảy ra');
+      setError('An error occurred');
     } finally {
       setLoading(false);
     }
@@ -109,7 +109,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
             className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
             disabled={loading}
           />
-          <span className="text-sm font-medium text-gray-700">Bật script ngay sau khi tạo</span>
+          <span className="text-sm font-medium text-gray-700">Enable script immediately after creation</span>
         </label>
       </div>
 
@@ -125,7 +125,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
           className="btn btn-primary flex-1"
           disabled={loading}
         >
-          {loading ? 'Đang tạo...' : 'Tạo Script'}
+          {loading ? 'Creating...' : 'Create Script'}
         </button>
         <button
           type="button"
@@ -133,7 +133,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
           className="btn btn-secondary"
           disabled={loading}
         >
-          Hủy
+          Cancel
         </button>
       </div>
     </form>

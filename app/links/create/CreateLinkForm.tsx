@@ -56,7 +56,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           // Redirect with new slugs in URL params
           router.push(`/links?new=${result.slugs.join(',')}`);
         } else {
-          setError(result.error || 'Không thể tạo links');
+          setError(result.error || 'Cannot create links');
         }
       } else {
         // Single link
@@ -74,11 +74,11 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           // Redirect with single new slug
           router.push(`/links?new=${slug}`);
         } else {
-          setError(result.error || 'Không thể tạo link');
+          setError(result.error || 'Cannot create link');
         }
       }
     } catch (err) {
-      setError('Có lỗi xảy ra');
+      setError('An error occurred');
     } finally {
       setLoading(false);
     }

@@ -58,7 +58,7 @@ export async function createLinkAction(data: CreateLinkData) {
     revalidatePath('/links');
     return { success: true };
   } catch (error) {
-    return { success: false, error: 'Có lỗi xảy ra' };
+    return { success: false, error: 'An error occurred' };
   }
 }
 
@@ -88,7 +88,7 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
       }
 
       if (attempts >= maxAttempts) {
-        return { success: false, error: 'Không thể tạo slug unique' };
+        return { success: false, error: 'Cannot create unique slug' };
       }
 
       linksToCreate.push({
@@ -118,7 +118,7 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
       slugs: linksToCreate.map(link => link.slug)
     };
   } catch (error) {
-    return { success: false, error: 'Có lỗi xảy ra' };
+    return { success: false, error: 'An error occurred' };
   }
 }
 

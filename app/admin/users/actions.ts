@@ -45,7 +45,7 @@ export async function createUserAction(data: CreateUserData) {
     revalidatePath('/admin/users');
     return { success: true };
   } catch (error) {
-    return { success: false, error: 'Có lỗi xảy ra' };
+    return { success: false, error: 'An error occurred' };
   }
 }
 

@@ -24,7 +24,7 @@ export async function createRedirectUrlAction(userId: string, url: string) {
     revalidatePath('/redirects');
     return { success: true };
   } catch (error) {
-    return { success: false, error: 'Có lỗi xảy ra' };
+    return { success: false, error: 'An error occurred' };
   }
 }
 
@@ -45,7 +45,7 @@ export async function toggleRedirectUrlAction(urlId: string, enabled: boolean) {
     revalidatePath('/redirects');
     return { success: true };
   } catch (error) {
-    return { success: false, error: 'Có lỗi xảy ra' };
+    return { success: false, error: 'An error occurred' };
   }
 }
 
