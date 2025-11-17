@@ -42,6 +42,18 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     }
   }, [link, userId]);
 
+  const handleButtonClick = async (buttonType: 'telegram' | 'web') => {
+    try {
+      await fetch('/api/track-button-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ linkId: link.id, buttonType }),
+      });
+    } catch (error) {
+      console.error('Track button click error:', error);
+    }
+  };
+
   const headScripts = scripts.filter(s => s.location === 'head');
   const bodyScripts = scripts.filter(s => s.location === 'body');
   
@@ -86,6 +98,7 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => handleButtonClick('telegram')}
                   className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
                 >
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -100,6 +113,7 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
                   href={webUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => handleButtonClick('web')}
                   className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

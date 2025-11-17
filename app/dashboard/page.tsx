@@ -16,10 +16,10 @@ async function getDashboardStats(userId: string) {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId);
   
-  // Get total visits
+  // Get total visits and button clicks
   const { data: links } = await supabase
     .from('links')
-    .select('id')
+    .select('id, telegram_clicks, web_clicks')
     .eq('user_id', userId);
   
   const linkIds = links?.map(l => l.id) || [];
@@ -28,6 +28,10 @@ async function getDashboardStats(userId: string) {
     .from('link_visits')
     .select('*', { count: 'exact', head: true })
     .in('link_id', linkIds.length > 0 ? linkIds : ['']);
+  
+  // Calculate total button clicks
+  const totalTelegramClicks = links?.reduce((sum, link) => sum + (link.telegram_clicks || 0), 0) || 0;
+  const totalWebClicks = links?.reduce((sum, link) => sum + (link.web_clicks || 0), 0) || 0;
   
   // Get total online (sessions active in last 30 minutes)
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
@@ -91,6 +95,8 @@ async function getDashboardStats(userId: string) {
     totalLinks: totalLinks || 0,
     totalVisits: totalVisits || 0,
     totalOnline: totalOnline || 0,
+    totalTelegramClicks,
+    totalWebClicks,
     dailyStats,
     topLinks: topLinks.slice(0, 5),
   };
@@ -111,7 +117,7 @@ export default async function DashboardPage() {
         </div>
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
               <div className="text-blue-100 text-sm font-medium">Total Links</div>
@@ -168,6 +174,35 @@ export default async function DashboardPage() {
             <div className="text-4xl font-bold">
               {stats.totalLinks > 0 ? Math.round(stats.totalVisits / stats.totalLinks) : 0}
             </div>
+          </div>
+        </div>
+
+        {/* Button Clicks Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-blue-100 text-sm font-medium">📱 Telegram Clicks</div>
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="text-4xl font-bold">{stats.totalTelegramClicks.toLocaleString()}</div>
+            <p className="text-blue-100 text-sm mt-2">Total clicks on Telegram buttons</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-green-100 text-sm font-medium">🌐 Web Clicks</div>
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+              </div>
+            </div>
+            <div className="text-4xl font-bold">{stats.totalWebClicks.toLocaleString()}</div>
+            <p className="text-green-100 text-sm mt-2">Total clicks on Web buttons</p>
           </div>
         </div>
         
