@@ -35,6 +35,17 @@ CREATE TABLE IF NOT EXISTS public.scripts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Table: global_settings
+CREATE TABLE IF NOT EXISTS public.global_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  telegram_url TEXT,
+  web_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
 -- Table: link_visits
 CREATE TABLE IF NOT EXISTS public.link_visits (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -51,12 +62,14 @@ CREATE INDEX IF NOT EXISTS idx_links_slug ON public.links(slug);
 CREATE INDEX IF NOT EXISTS idx_scripts_user_id ON public.scripts(user_id);
 CREATE INDEX IF NOT EXISTS idx_link_visits_link_id ON public.link_visits(link_id);
 CREATE INDEX IF NOT EXISTS idx_link_visits_visited_at ON public.link_visits(visited_at);
+CREATE INDEX IF NOT EXISTS idx_global_settings_user_id ON public.global_settings(user_id);
 
 -- Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scripts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.link_visits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.global_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policies cho users
 CREATE POLICY "Users can view their own data" ON public.users
@@ -94,6 +107,19 @@ CREATE POLICY "Anyone can create visit records" ON public.link_visits
 
 CREATE POLICY "Users can view visit records" ON public.link_visits
   FOR SELECT USING (true);
+
+-- Policies cho global_settings
+CREATE POLICY "Users can view their own settings" ON public.global_settings
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can create their own settings" ON public.global_settings
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update their own settings" ON public.global_settings
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Users can delete their own settings" ON public.global_settings
+  FOR DELETE USING (true);
 
 -- Tạo default admin user (password: admin123)
 -- Hash này là bcrypt hash của "admin123"

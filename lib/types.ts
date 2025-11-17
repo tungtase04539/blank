@@ -48,3 +48,12 @@ export interface DailyStats {
   visits: number;
 }
 
+export interface GlobalSettings {
+  id: string;
+  user_id: string;
+  telegram_url: string | null;
+  web_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+

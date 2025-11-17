@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createLinkAction } from './actions';
+import { createLinkAction, createMultiLinksAction } from './actions';
+import { generateSlug } from '@/lib/utils';
 
 interface CreateLinkFormProps {
   userId: string;
@@ -11,13 +12,19 @@ interface CreateLinkFormProps {
 export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
   const router = useRouter();
   const [slug, setSlug] = useState('');
-  const [videoUrl, setVideoUrl] = useState('');
+  const [videoUrls, setVideoUrls] = useState('');
   const [destinationUrl, setDestinationUrl] = useState('');
   const [redirectEnabled, setRedirectEnabled] = useState(false);
   const [telegramUrl, setTelegramUrl] = useState('');
   const [webUrl, setWebUrl] = useState('');
+  const [useCustomButtons, setUseCustomButtons] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Auto-generate slug on mount
+  useEffect(() => {
+    setSlug(generateSlug());
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,20 +32,48 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
     setLoading(true);
 
     try {
-      const result = await createLinkAction({
-        userId,
-        slug,
-        videoUrl,
-        destinationUrl: destinationUrl || null,
-        redirectEnabled,
-        telegramUrl: telegramUrl || null,
-        webUrl: webUrl || null,
-      });
+      // Parse video URLs
+      const urls = videoUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0);
+      
+      if (urls.length === 0) {
+        setError('Vui lòng nhập ít nhất 1 video URL');
+        setLoading(false);
+        return;
+      }
 
-      if (result.success) {
-        router.push('/links');
+      // If multiple URLs, create multiple links
+      if (urls.length > 1) {
+        const result = await createMultiLinksAction({
+          userId,
+          videoUrls: urls,
+          destinationUrl: destinationUrl || null,
+          redirectEnabled,
+          telegramUrl: useCustomButtons ? (telegramUrl || null) : null,
+          webUrl: useCustomButtons ? (webUrl || null) : null,
+        });
+
+        if (result.success) {
+          router.push('/links');
+        } else {
+          setError(result.error || 'Không thể tạo links');
+        }
       } else {
-        setError(result.error || 'Không thể tạo link');
+        // Single link
+        const result = await createLinkAction({
+          userId,
+          slug,
+          videoUrl: urls[0],
+          destinationUrl: destinationUrl || null,
+          redirectEnabled,
+          telegramUrl: useCustomButtons ? (telegramUrl || null) : null,
+          webUrl: useCustomButtons ? (webUrl || null) : null,
+        });
+
+        if (result.success) {
+          router.push('/links');
+        } else {
+          setError(result.error || 'Không thể tạo link');
+        }
       }
     } catch (err) {
       setError('Có lỗi xảy ra');
@@ -47,79 +82,121 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
     }
   };
 
+  const regenerateSlug = () => {
+    setSlug(generateSlug());
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-          Slug (URL ngắn) *
+          Slug (URL ngắn) - Tự động generate *
         </label>
-        <div className="flex items-center">
-          <span className="text-gray-500 mr-2">/</span>
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500">/</span>
           <input
             id="slug"
             type="text"
             value={slug}
-            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, ''))}
-            className="input"
-            placeholder="vi-du-link-ngan"
-            required
+            className="input flex-1 bg-gray-50"
+            readOnly
             disabled={loading}
           />
+          <button
+            type="button"
+            onClick={regenerateSlug}
+            className="btn btn-secondary whitespace-nowrap"
+            disabled={loading}
+          >
+            🔄 Tạo mới
+          </button>
         </div>
-        <p className="text-sm text-gray-500 mt-1">Chỉ sử dụng chữ thường, số, gạch ngang và gạch dưới</p>
+        <p className="text-sm text-gray-500 mt-1">
+          Format: 5 ký tự ngẫu nhiên + "mp4" (VD: {slug})
+        </p>
       </div>
 
       <div>
-        <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-2">
-          Video URL *
+        <label htmlFor="videoUrls" className="block text-sm font-medium text-gray-700 mb-2">
+          Video URLs *
         </label>
-        <input
-          id="videoUrl"
-          type="url"
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
-          className="input"
-          placeholder="https://example.com/video.webm"
+        <textarea
+          id="videoUrls"
+          value={videoUrls}
+          onChange={(e) => setVideoUrls(e.target.value)}
+          className="input font-mono text-sm"
+          placeholder="https://example.com/video1.webm
+https://example.com/video2.webm
+https://example.com/video3.webm
+
+(Mỗi dòng 1 video URL - Tự động tạo nhiều links)"
+          rows={6}
           required
           disabled={loading}
         />
-        <p className="text-sm text-gray-500 mt-1">URL của video (định dạng WebM)</p>
+        <p className="text-sm text-gray-500 mt-1">
+          Nhập mỗi URL một dòng. Nếu nhiều URLs → tự động tạo nhiều links với slug random
+        </p>
       </div>
 
       <div className="border-t pt-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Buttons Ở Bottom (Tùy chọn)</h3>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label htmlFor="telegramUrl" className="block text-sm font-medium text-gray-700 mb-2">
-              📱 Telegram Button URL
-            </label>
+        <div className="mb-4">
+          <label className="flex items-center space-x-3 cursor-pointer">
             <input
-              id="telegramUrl"
-              type="url"
-              value={telegramUrl}
-              onChange={(e) => setTelegramUrl(e.target.value)}
-              className="input"
-              placeholder="https://t.me/your_channel"
+              type="checkbox"
+              checked={useCustomButtons}
+              onChange={(e) => setUseCustomButtons(e.target.checked)}
+              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
               disabled={loading}
             />
-          </div>
-
-          <div>
-            <label htmlFor="webUrl" className="block text-sm font-medium text-gray-700 mb-2">
-              🌐 Web Button URL
-            </label>
-            <input
-              id="webUrl"
-              type="url"
-              value={webUrl}
-              onChange={(e) => setWebUrl(e.target.value)}
-              className="input"
-              placeholder="https://your-website.com"
-              disabled={loading}
-            />
-          </div>
+            <span className="text-sm font-medium text-gray-700">
+              Sử dụng buttons riêng cho link này (mặc định dùng global settings)
+            </span>
+          </label>
         </div>
+
+        {useCustomButtons && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label htmlFor="telegramUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                📱 Telegram Button URL
+              </label>
+              <input
+                id="telegramUrl"
+                type="url"
+                value={telegramUrl}
+                onChange={(e) => setTelegramUrl(e.target.value)}
+                className="input"
+                placeholder="https://t.me/your_channel"
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="webUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                🌐 Web Button URL
+              </label>
+              <input
+                id="webUrl"
+                type="url"
+                value={webUrl}
+                onChange={(e) => setWebUrl(e.target.value)}
+                className="input"
+                placeholder="https://your-website.com"
+                disabled={loading}
+              />
+            </div>
+          </div>
+        )}
+        
+        {!useCustomButtons && (
+          <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
+            💡 Link này sẽ sử dụng buttons từ <strong>Global Settings</strong>. 
+            Vào menu <strong>Settings</strong> để cấu hình buttons chung cho tất cả links.
+          </p>
+        )}
       </div>
 
       <div className="border-t pt-6">

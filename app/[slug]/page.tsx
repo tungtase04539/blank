@@ -33,6 +33,18 @@ async function getScripts(userId: string) {
   return scripts || [];
 }
 
+async function getGlobalSettings(userId: string) {
+  const supabase = await createClient();
+  
+  const { data: settings } = await supabase
+    .from('global_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  
+  return settings;
+}
+
 export default async function PublicLinkPage({ params }: PageProps) {
   const { slug } = await params;
   const link = await getLink(slug);
@@ -42,7 +54,8 @@ export default async function PublicLinkPage({ params }: PageProps) {
   }
   
   const scripts = await getScripts(link.user_id);
+  const globalSettings = await getGlobalSettings(link.user_id);
   
-  return <LinkPage link={link} scripts={scripts} />;
+  return <LinkPage link={link} scripts={scripts} globalSettings={globalSettings} />;
 }
 

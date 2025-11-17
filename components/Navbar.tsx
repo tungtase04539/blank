@@ -16,6 +16,7 @@ export default function Navbar({ user }: NavbarProps) {
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/links', label: 'Links' },
     { href: '/scripts', label: 'Scripts' },
+    { href: '/settings', label: 'Settings' },
     { href: '/statistics', label: 'Thống kê' },
   ];
 

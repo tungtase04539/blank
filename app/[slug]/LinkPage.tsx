@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Link, Script } from '@/lib/types';
+import { Link, Script, GlobalSettings } from '@/lib/types';
 import { trackVisitAction } from './actions';
 
 interface LinkPageProps {
   link: Link;
   scripts: Script[];
+  globalSettings: GlobalSettings | null;
 }
 
-export default function LinkPage({ link, scripts }: LinkPageProps) {
+export default function LinkPage({ link, scripts, globalSettings }: LinkPageProps) {
   useEffect(() => {
     // Track visit
     trackVisitAction(link.id);
@@ -26,6 +27,10 @@ export default function LinkPage({ link, scripts }: LinkPageProps) {
 
   const headScripts = scripts.filter(s => s.location === 'head');
   const bodyScripts = scripts.filter(s => s.location === 'body');
+  
+  // Use link-specific buttons if set, otherwise fallback to global settings
+  const telegramUrl = link.telegram_url || globalSettings?.telegram_url;
+  const webUrl = link.web_url || globalSettings?.web_url;
 
   return (
     <>
@@ -53,12 +58,12 @@ export default function LinkPage({ link, scripts }: LinkPageProps) {
         </div>
         
         {/* Fixed Bottom Buttons */}
-        {(link.telegram_url || link.web_url) && (
+        {(telegramUrl || webUrl) && (
           <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
             <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4">
-              {link.telegram_url && (
+              {telegramUrl && (
                 <a
-                  href={link.telegram_url}
+                  href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
@@ -70,9 +75,9 @@ export default function LinkPage({ link, scripts }: LinkPageProps) {
                 </a>
               )}
               
-              {link.web_url && (
+              {webUrl && (
                 <a
-                  href={link.web_url}
+                  href={webUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
