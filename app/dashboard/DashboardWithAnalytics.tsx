@@ -11,6 +11,10 @@ interface AnalyticsData {
     date: string;
     views: number;
   }>;
+  topOnlineLinks: Array<{
+    page: string;
+    activeUsers: number;
+  }>;
 }
 
 interface DashboardWithAnalyticsProps {
@@ -167,35 +171,113 @@ export default function DashboardWithAnalytics({
         </div>
       )}
 
-      {/* Top Links */}
-      <div className="card">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Top Links (Button Clicks)</h2>
-        {topLinks.length > 0 ? (
-          <div className="space-y-4">
-            {topLinks.map((link, index) => (
-              <div 
-                key={link.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full font-bold">
-                    {index + 1}
+      {/* Two Column Layout for Top Links */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Top Links by Button Clicks */}
+        <div className="card">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">
+            🔥 Top Links (Button Clicks)
+          </h2>
+          {topLinks.length > 0 ? (
+            <div className="space-y-4">
+              {topLinks.map((link, index) => (
+                <div 
+                  key={link.id}
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">/{link.slug}</p>
+                      <p className="text-xs text-gray-500 truncate max-w-[200px]">
+                        {link.video_url}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">/{link.slug}</p>
-                    <p className="text-sm text-gray-600 truncate max-w-md">{link.video_url}</p>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-gray-900">{link.total_clicks}</p>
+                    <p className="text-xs text-gray-600">clicks</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-gray-900">{link.total_clicks}</p>
-                  <p className="text-sm text-gray-600">clicks</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">No links yet</p>
+          )}
+        </div>
+
+        {/* Top Online Links (Real-time from GA) */}
+        <div className="card">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              👥 Top 10 Online Now
+            </h2>
+            <span className="flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+            </span>
           </div>
-        ) : (
-          <p className="text-gray-500 text-center py-8">No links yet</p>
-        )}
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map(i => (
+                <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg animate-pulse">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
+                    <div className="h-4 bg-gray-300 rounded w-32"></div>
+                  </div>
+                  <div className="h-8 bg-gray-300 rounded w-12"></div>
+                </div>
+              ))}
+            </div>
+          ) : analytics?.topOnlineLinks && analytics.topOnlineLinks.length > 0 ? (
+            <div className="space-y-4">
+              {analytics.topOnlineLinks.map((link, index) => {
+                // Extract slug from page path (e.g., "/abc12mp4" -> "abc12mp4")
+                const slug = link.page.replace('/', '');
+                
+                return (
+                  <div 
+                    key={link.page}
+                    className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-full font-bold text-sm">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">/{slug}</p>
+                        <p className="text-xs text-green-600 flex items-center">
+                          <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
+                          Live now
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-600">{link.activeUsers}</p>
+                      <p className="text-xs text-gray-600">online</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">😴</div>
+              <p className="text-gray-500">No one online right now</p>
+              <p className="text-sm text-gray-400 mt-2">Come back later!</p>
+            </div>
+          )}
+          
+          {!loading && analytics?.topOnlineLinks && analytics.topOnlineLinks.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-500 text-center">
+                🔄 Real-time data • Updates every 5 minutes
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

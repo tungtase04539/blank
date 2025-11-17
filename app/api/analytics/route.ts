@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getAnalyticsData, getRealtimeUsers } from '@/lib/google-analytics';
+import { getAnalyticsData, getRealtimeUsers, getTopOnlineLinks } from '@/lib/google-analytics';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     // Fetch data from Google Analytics
-    const analyticsData = await getAnalyticsData(7);
-    const realtimeUsers = await getRealtimeUsers();
+    const [analyticsData, realtimeUsers, topOnlineLinks] = await Promise.all([
+      getAnalyticsData(7),
+      getRealtimeUsers(),
+      getTopOnlineLinks(),
+    ]);
 
     if (!analyticsData) {
       return NextResponse.json({
@@ -15,6 +18,7 @@ export async function GET() {
         totalUsers: 0,
         realtimeUsers: 0,
         dailyStats: [],
+        topOnlineLinks: [],
       });
     }
 
@@ -23,6 +27,7 @@ export async function GET() {
       totalUsers: analyticsData.totalUsers,
       realtimeUsers,
       dailyStats: analyticsData.dailyStats,
+      topOnlineLinks,
     });
   } catch (error) {
     console.error('Analytics API error:', error);

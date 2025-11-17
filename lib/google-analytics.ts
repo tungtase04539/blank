@@ -205,6 +205,42 @@ export async function getRealtimeUsers(): Promise<number> {
 }
 
 /**
+ * Get top 10 links by real-time online users
+ */
+export async function getTopOnlineLinks(): Promise<Array<{ page: string; activeUsers: number }>> {
+  try {
+    if (!propertyId) return [];
+
+    const [response] = await analyticsDataClient.runRealtimeReport({
+      property: `properties/${propertyId}`,
+      dimensions: [
+        { name: 'pagePath' },
+      ],
+      metrics: [
+        { name: 'activeUsers' },
+      ],
+      orderBys: [
+        {
+          metric: {
+            metricName: 'activeUsers',
+          },
+          desc: true,
+        },
+      ],
+      limit: 10,
+    });
+
+    return response.rows?.map(row => ({
+      page: row.dimensionValues?.[0].value || '',
+      activeUsers: parseInt(row.metricValues?.[0].value || '0'),
+    })).filter(link => link.page !== '/' && link.activeUsers > 0) || [];
+  } catch (error) {
+    console.error('Error fetching top online links:', error);
+    return [];
+  }
+}
+
+/**
  * Get analytics for specific link by slug
  */
 export async function getLinkAnalytics(slug: string, days: number = 7) {
