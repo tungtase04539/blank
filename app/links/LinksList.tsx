@@ -43,104 +43,247 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
 
   if (links.length === 0) {
     return (
-      <div className="card text-center py-12">
-        <div className="text-6xl mb-4">🔗</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Chưa có link nào</h3>
-        <p className="text-gray-600">Tạo link đầu tiên của bạn để bắt đầu</p>
+      <div className="relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 opacity-50"></div>
+        
+        <div className="relative card text-center py-16 border-2 border-dashed border-gray-300">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mb-6 animate-pulse">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Chưa có link nào</h3>
+          <p className="text-gray-600 mb-6">Tạo link đầu tiên của bạn để bắt đầu tracking và phân tích</p>
+          <Link href="/links/create" className="btn btn-primary inline-flex items-center space-x-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Tạo Link Ngay</span>
+          </Link>
+        </div>
       </div>
     );
   }
 
+  const totalClicks = links.reduce((sum, link) => sum + link.visit_count, 0);
+  const totalOnline = links.reduce((sum, link) => sum + link.online_count, 0);
+
   return (
-    <div>
-      {/* Sort Options */}
-      <div className="card mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Sắp xếp theo:</span>
-            <button
-              onClick={() => handleSortChange('created')}
-              className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                currentSort === 'created'
-                  ? 'bg-blue-100 text-blue-700 font-medium'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              📅 Mới nhất
-            </button>
-            <button
-              onClick={() => handleSortChange('clicks')}
-              className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                currentSort === 'clicks'
-                  ? 'bg-blue-100 text-blue-700 font-medium'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              🔥 Click nhiều nhất
-            </button>
-            <button
-              onClick={() => handleSortChange('online')}
-              className={`px-3 py-1 text-sm rounded-lg transition-colors ${
-                currentSort === 'online'
-                  ? 'bg-blue-100 text-blue-700 font-medium'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              👥 Online nhiều nhất
-            </button>
+    <div className="space-y-6">
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-blue-100 text-sm font-medium">Tổng Links</div>
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+              </svg>
+            </div>
           </div>
-          <div className="text-sm text-gray-600">
-            Tổng: <strong>{links.length}</strong> links
+          <div className="text-3xl font-bold">{links.length}</div>
+        </div>
+
+        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-green-100 text-sm font-medium">Tổng Clicks</div>
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+            </div>
+          </div>
+          <div className="text-3xl font-bold">{totalClicks.toLocaleString()}</div>
+        </div>
+
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-purple-100 text-sm font-medium">Đang Online</div>
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+          </div>
+          <div className="text-3xl font-bold flex items-center">
+            {totalOnline}
+            <span className="ml-2 w-2 h-2 bg-green-300 rounded-full animate-ping"></span>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-orange-100 text-sm font-medium">TB Click/Link</div>
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+          </div>
+          <div className="text-3xl font-bold">{links.length > 0 ? Math.round(totalClicks / links.length) : 0}</div>
+        </div>
+      </div>
+
+      {/* Sort Tabs */}
+      <div className="bg-white rounded-xl shadow-md p-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-semibold text-gray-700">Sắp xếp:</span>
+            <div className="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50">
+              <button
+                onClick={() => handleSortChange('created')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  currentSort === 'created'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <span className="flex items-center space-x-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Mới nhất</span>
+                </span>
+              </button>
+              <button
+                onClick={() => handleSortChange('clicks')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  currentSort === 'clicks'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <span className="flex items-center space-x-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  <span>Nhiều click</span>
+                </span>
+              </button>
+              <button
+                onClick={() => handleSortChange('online')}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  currentSort === 'online'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <span className="flex items-center space-x-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  <span>Đang hot</span>
+                </span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="text-sm text-gray-500">
+            Hiển thị <strong className="text-gray-900">{links.length}</strong> links
           </div>
         </div>
       </div>
 
-      {/* Compact Links List */}
-      <div className="grid grid-cols-1 gap-4">
+      {/* Links Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {links.map((link) => (
-          <div key={link.id} className="card hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              {/* Left: Link Info */}
-              <div className="flex items-center space-x-4 flex-1 min-w-0">
-                <div className="flex-shrink-0">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+          <div
+            key={link.id}
+            className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 hover:border-blue-200"
+          >
+            {/* Header with Gradient */}
+            <div className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 px-5 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-white font-bold text-lg border border-white/30">
                     {link.slug.substring(0, 2).toUpperCase()}
                   </div>
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <h3 className="text-lg font-semibold text-gray-900 truncate">
-                      /{link.slug}
+                  <div>
+                    <h3 className="text-white font-bold text-lg flex items-center space-x-2">
+                      <span>/{link.slug}</span>
+                      {link.redirect_enabled && (
+                        <span className="px-2 py-0.5 bg-green-400 text-green-900 text-xs rounded-full font-semibold">
+                          ↗ Redirect
+                        </span>
+                      )}
                     </h3>
-                    {link.redirect_enabled && (
-                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                        ↗ Redirect
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <span className="flex items-center">
-                      📊 <strong className="ml-1">{link.visit_count}</strong> clicks
-                    </span>
-                    <span className="flex items-center">
-                      👥 <strong className="ml-1 text-green-600">{link.online_count}</strong> online
-                    </span>
-                    <span className="text-gray-400">
-                      {new Date(link.created_at).toLocaleDateString('vi-VN')}
-                    </span>
+                    <p className="text-white/80 text-xs">
+                      {new Date(link.created_at).toLocaleDateString('vi-VN', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        year: 'numeric' 
+                      })}
+                    </p>
                   </div>
                 </div>
               </div>
-              
-              {/* Right: Actions */}
-              <div className="flex items-center space-x-2 ml-4">
+            </div>
+
+            {/* Stats Section */}
+            <div className="px-5 py-4 bg-gray-50">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white rounded-lg p-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Total Clicks</div>
+                      <div className="text-2xl font-bold text-gray-900">{link.visit_count.toLocaleString()}</div>
+                    </div>
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-3 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Online Now</div>
+                      <div className="text-2xl font-bold text-green-600 flex items-center">
+                        {link.online_count}
+                        {link.online_count > 0 && (
+                          <span className="ml-2 flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="px-5 py-4 bg-white border-t border-gray-100">
+              <div className="flex items-center justify-between gap-2">
                 <button
                   onClick={() => copyToClipboard(link.slug, link.id)}
-                  className="btn btn-secondary text-sm"
+                  className="flex-1 btn btn-secondary text-sm flex items-center justify-center space-x-1"
                   title="Copy link"
                 >
-                  {copiedId === link.id ? '✓' : '📋'}
+                  {copiedId === link.id ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>Copy</span>
+                    </>
+                  )}
                 </button>
                 
                 <a
@@ -150,7 +293,10 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   className="btn btn-secondary text-sm"
                   title="Xem link"
                 >
-                  👁️
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
                 </a>
                 
                 <Link
@@ -158,7 +304,9 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   className="btn btn-secondary text-sm"
                   title="Sửa"
                 >
-                  ✏️
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
                 </Link>
                 
                 <button
@@ -167,7 +315,15 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   className="btn btn-danger text-sm"
                   title="Xóa"
                 >
-                  {deleting === link.id ? '...' : '🗑️'}
+                  {deleting === link.id ? (
+                    <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
