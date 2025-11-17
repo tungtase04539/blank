@@ -387,7 +387,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
               </div>
             </div>
 
-            {/* Actions */}
+              {/* Actions */}
             <div className="px-5 py-4 bg-white border-t border-gray-100">
               <div className="flex items-center justify-between gap-2">
                 <button
@@ -410,6 +410,20 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                       <span>Copy</span>
                     </>
                   )}
+                </button>
+
+                <button
+                  onClick={() => handleToggleRedirect(link.id, link.redirect_enabled)}
+                  className={`btn text-sm flex items-center space-x-1 ${
+                    link.redirect_enabled
+                      ? 'bg-green-500 text-white hover:bg-green-600'
+                      : 'btn-secondary'
+                  }`}
+                  title={link.redirect_enabled ? 'Tắt redirect' : 'Bật redirect'}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </button>
                 
                 <a

@@ -15,6 +15,7 @@ export default function Navbar({ user }: NavbarProps) {
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/links', label: 'Links' },
+    { href: '/redirects', label: 'Redirects' },
     { href: '/scripts', label: 'Scripts' },
     { href: '/settings', label: 'Settings' },
     { href: '/statistics', label: 'Thống kê' },

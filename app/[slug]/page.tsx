@@ -56,6 +56,6 @@ export default async function PublicLinkPage({ params }: PageProps) {
   const scripts = await getScripts(link.user_id);
   const globalSettings = await getGlobalSettings(link.user_id);
   
-  return <LinkPage link={link} scripts={scripts} globalSettings={globalSettings} />;
+  return <LinkPage link={link} scripts={scripts} globalSettings={globalSettings} userId={link.user_id} />;
 }
 

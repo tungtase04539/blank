@@ -65,6 +65,26 @@ CREATE TABLE IF NOT EXISTS public.online_sessions (
   UNIQUE(link_id, ip_address)
 );
 
+-- Table: redirect_urls (global list of redirect URLs)
+CREATE TABLE IF NOT EXISTS public.redirect_urls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  enabled BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Table: redirect_history (track IP redirects for smart redirect logic)
+CREATE TABLE IF NOT EXISTS public.redirect_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  ip_address TEXT NOT NULL,
+  redirect_count INTEGER DEFAULT 1,
+  last_redirect_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  expires_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() + INTERVAL '5 minutes',
+  UNIQUE(ip_address)
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_links_user_id ON public.links(user_id);
 CREATE INDEX IF NOT EXISTS idx_links_slug ON public.links(slug);
@@ -74,6 +94,9 @@ CREATE INDEX IF NOT EXISTS idx_link_visits_visited_at ON public.link_visits(visi
 CREATE INDEX IF NOT EXISTS idx_global_settings_user_id ON public.global_settings(user_id);
 CREATE INDEX IF NOT EXISTS idx_online_sessions_link_id ON public.online_sessions(link_id);
 CREATE INDEX IF NOT EXISTS idx_online_sessions_last_active ON public.online_sessions(last_active);
+CREATE INDEX IF NOT EXISTS idx_redirect_urls_user_id ON public.redirect_urls(user_id);
+CREATE INDEX IF NOT EXISTS idx_redirect_history_ip_address ON public.redirect_history(ip_address);
+CREATE INDEX IF NOT EXISTS idx_redirect_history_expires_at ON public.redirect_history(expires_at);
 
 -- Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -82,6 +105,8 @@ ALTER TABLE public.scripts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.link_visits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.global_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.online_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.redirect_urls ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.redirect_history ENABLE ROW LEVEL SECURITY;
 
 -- Policies cho users
 CREATE POLICY "Users can view their own data" ON public.users
@@ -144,6 +169,32 @@ CREATE POLICY "Users can view online sessions" ON public.online_sessions
   FOR SELECT USING (true);
 
 CREATE POLICY "Auto delete old sessions" ON public.online_sessions
+  FOR DELETE USING (true);
+
+-- Policies cho redirect_urls
+CREATE POLICY "Users can view redirect urls" ON public.redirect_urls
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can create redirect urls" ON public.redirect_urls
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update redirect urls" ON public.redirect_urls
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Users can delete redirect urls" ON public.redirect_urls
+  FOR DELETE USING (true);
+
+-- Policies cho redirect_history
+CREATE POLICY "Anyone can view redirect history" ON public.redirect_history
+  FOR SELECT USING (true);
+
+CREATE POLICY "Anyone can create redirect history" ON public.redirect_history
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Anyone can update redirect history" ON public.redirect_history
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Anyone can delete redirect history" ON public.redirect_history
   FOR DELETE USING (true);
 
 -- Tạo default admin user (password: admin123)

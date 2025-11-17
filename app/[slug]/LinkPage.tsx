@@ -8,22 +8,39 @@ interface LinkPageProps {
   link: Link;
   scripts: Script[];
   globalSettings: GlobalSettings | null;
+  userId: string;
 }
 
-export default function LinkPage({ link, scripts, globalSettings }: LinkPageProps) {
+export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
   useEffect(() => {
     // Track visit
     trackVisitAction(link.id);
     
-    // Handle redirect if enabled
-    if (link.redirect_enabled && link.destination_url) {
-      const timer = setTimeout(() => {
-        window.location.href = link.destination_url!;
-      }, 100);
+    // Handle smart redirect if enabled
+    if (link.redirect_enabled) {
+      const checkAndRedirect = async () => {
+        try {
+          const response = await fetch('/api/smart-redirect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId }),
+          });
+          
+          const data = await response.json();
+          
+          if (data.shouldRedirect && data.url) {
+            setTimeout(() => {
+              window.location.href = data.url;
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Redirect error:', error);
+        }
+      };
       
-      return () => clearTimeout(timer);
+      checkAndRedirect();
     }
-  }, [link]);
+  }, [link, userId]);
 
   const headScripts = scripts.filter(s => s.location === 'head');
   const bodyScripts = scripts.filter(s => s.location === 'body');
@@ -60,7 +77,7 @@ export default function LinkPage({ link, scripts, globalSettings }: LinkPageProp
         {/* Fixed Bottom Buttons */}
         {(telegramUrl || webUrl) && (
           <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
-            <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4">
+            <div className={`max-w-4xl mx-auto grid gap-4 ${telegramUrl && webUrl ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {telegramUrl && (
                 <a
                   href={telegramUrl}
