@@ -1,7 +1,7 @@
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import Navbar from '@/components/Navbar';
-import DashboardWithAnalytics from './DashboardWithAnalytics';
+import DashboardHybrid from './DashboardHybrid';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,12 +58,13 @@ export default async function DashboardPage() {
           <p className="text-gray-600 mt-2">Overview of your links and traffic</p>
         </div>
         
-        <DashboardWithAnalytics
+        <DashboardHybrid
           totalLinks={stats.totalLinks}
           totalClicks={stats.totalClicks}
           totalTelegramClicks={stats.totalTelegramClicks}
           totalWebClicks={stats.totalWebClicks}
           topLinks={stats.topLinks}
+          gaViewId={process.env.NEXT_PUBLIC_GA_VIEW_ID}
         />
       </main>
     </div>
