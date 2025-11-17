@@ -66,34 +66,54 @@ export async function login(email: string, password: string) {
     password: user.id,
   });
 
-  // If user doesn't exist in Auth, create them with auto-confirm
-  if (authResult.error) {
-    const signUpResult = await supabase.auth.signUp({
-      email,
-      password: user.id,
-      options: {
-        emailRedirectTo: undefined,
-        data: {
-          email_confirmed: true
+  // If user doesn't exist in Auth, create them using admin API
+  if (authResult.error?.message?.includes('Invalid login credentials')) {
+    try {
+      // Use service role to create user with confirmed email
+      const { createClient: createServiceClient } = await import('@supabase/supabase-js');
+      const supabaseAdmin = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
         }
+      );
+
+      // Create user in auth with admin API (bypasses email confirmation)
+      const { data: newUser, error: adminError } = await supabaseAdmin.auth.admin.createUser({
+        email: email,
+        password: user.id,
+        email_confirm: true,
+        user_metadata: {
+          role: user.role
+        }
+      });
+
+      if (adminError) {
+        console.error('Admin createUser error:', adminError);
+        return { success: false, error: 'Failed to create auth session: ' + adminError.message };
       }
-    });
 
-    if (signUpResult.error) {
-      console.error('SignUp error:', signUpResult.error);
-      return { success: false, error: 'Authentication failed: ' + signUpResult.error.message };
+      // Now try to sign in again
+      authResult = await supabase.auth.signInWithPassword({
+        email,
+        password: user.id,
+      });
+
+      if (authResult.error) {
+        console.error('SignIn error after admin creation:', authResult.error);
+        return { success: false, error: 'Login failed: ' + authResult.error.message };
+      }
+    } catch (err: any) {
+      console.error('Exception during admin user creation:', err);
+      return { success: false, error: 'Authentication error: ' + err.message };
     }
-
-    // Try to sign in again after signup
-    authResult = await supabase.auth.signInWithPassword({
-      email,
-      password: user.id,
-    });
-
-    if (authResult.error) {
-      console.error('SignIn error after signup:', authResult.error);
-      return { success: false, error: 'Authentication failed: ' + authResult.error.message };
-    }
+  } else if (authResult.error) {
+    console.error('SignIn error:', authResult.error);
+    return { success: false, error: authResult.error.message };
   }
 
   return { success: true, user };
