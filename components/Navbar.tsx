@@ -18,11 +18,11 @@ export default function Navbar({ user }: NavbarProps) {
     { href: '/redirects', label: 'Redirects' },
     { href: '/scripts', label: 'Scripts' },
     { href: '/settings', label: 'Settings' },
-    { href: '/statistics', label: 'Thống kê' },
+    { href: '/statistics', label: 'Statistics' },
   ];
 
   if (user.role === 'admin') {
-    navItems.push({ href: '/admin/users', label: 'Quản lý Users' });
+    navItems.push({ href: '/admin/users', label: 'Users' });
   }
 
   const handleLogout = async () => {
@@ -68,7 +68,7 @@ export default function Navbar({ user }: NavbarProps) {
               onClick={handleLogout}
               className="btn btn-secondary text-sm"
             >
-              Đăng xuất
+              Logout
             </button>
           </div>
         </div>

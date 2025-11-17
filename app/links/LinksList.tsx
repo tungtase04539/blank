@@ -36,7 +36,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
   }, [searchParams, links, router]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa link này?')) return;
+    if (!confirm('Are you sure you want to delete this link?')) return;
     
     setDeleting(id);
     await deleteLinkAction(id);
@@ -71,13 +71,13 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
             </svg>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Chưa có link nào</h3>
-          <p className="text-gray-600 mb-6">Tạo link đầu tiên của bạn để bắt đầu tracking và phân tích</p>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">No links yet</h3>
+          <p className="text-gray-600 mb-6">Create your first link to start tracking and analyzing</p>
           <Link href="/links/create" className="btn btn-primary inline-flex items-center space-x-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Tạo Link Ngay</span>
+            <span>Create Link Now</span>
           </Link>
         </div>
       </div>
@@ -109,9 +109,9 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-white">
-                      Tạo thành công {newLinks.length} link{newLinks.length > 1 ? 's' : ''}!
+                      Successfully created {newLinks.length} link{newLinks.length > 1 ? 's' : ''}!
                     </h3>
-                    <p className="text-green-100 text-sm">Click để copy link và chia sẻ ngay</p>
+                    <p className="text-green-100 text-sm">Click to copy link and share immediately</p>
                   </div>
                 </div>
                 <button
@@ -269,7 +269,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>Mới nhất</span>
+                  <span>Latest</span>
                 </span>
               </button>
               <button
@@ -284,7 +284,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
-                  <span>Nhiều click</span>
+                  <span>Most Clicks</span>
                 </span>
               </button>
               <button
@@ -299,7 +299,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
-                  <span>Đang hot</span>
+                  <span>Trending</span>
                 </span>
               </button>
             </div>
@@ -442,7 +442,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                 <Link
                   href={`/links/edit/${link.id}`}
                   className="btn btn-secondary text-sm"
-                  title="Sửa"
+                  title="Edit"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -453,7 +453,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   onClick={() => handleDelete(link.id)}
                   disabled={deleting === link.id}
                   className="btn btn-danger text-sm"
-                  title="Xóa"
+                  title="Delete"
                 >
                   {deleting === link.id ? (
                     <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -107,14 +107,14 @@ export default async function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Xem tổng quan về links và traffic của bạn</p>
+          <p className="text-gray-600 mt-2">Overview of your links and traffic</p>
         </div>
         
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-blue-100 text-sm font-medium">Tổng Links</div>
+              <div className="text-blue-100 text-sm font-medium">Total Links</div>
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
@@ -126,7 +126,7 @@ export default async function DashboardPage() {
           
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-green-100 text-sm font-medium">Tổng Clicks</div>
+              <div className="text-green-100 text-sm font-medium">Total Clicks</div>
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
 
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-orange-100 text-sm font-medium">Đang Online</div>
+              <div className="text-orange-100 text-sm font-medium">Online Now</div>
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -158,7 +158,7 @@ export default async function DashboardPage() {
           
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-purple-100 text-sm font-medium">TB Click/Link</div>
+              <div className="text-purple-100 text-sm font-medium">Avg Click/Link</div>
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
         
         {/* Traffic Chart */}
         <div className="card mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Traffic 7 Ngày Qua</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Last 7 Days Traffic</h2>
           <TrafficChart data={stats.dailyStats} />
         </div>
         
@@ -198,13 +198,13 @@ export default async function DashboardPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-gray-900">{link.visit_count}</p>
-                    <p className="text-sm text-gray-600">lượt truy cập</p>
+                    <p className="text-sm text-gray-600">visits</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-8">Chưa có link nào</p>
+            <p className="text-gray-500 text-center py-8">No links yet</p>
           )}
         </div>
       </main>

@@ -23,10 +23,10 @@ export default function LoginForm() {
         router.push('/dashboard');
         router.refresh();
       } else {
-        setError(result.error || 'Đăng nhập thất bại');
+        setError(result.error || 'Login failed');
       }
     } catch (err) {
-      setError('Có lỗi xảy ra, vui lòng thử lại');
+      setError('An error occurred, please try again');
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ export default function LoginForm() {
 
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-          Mật khẩu
+          Password
         </label>
         <input
           id="password"
@@ -77,7 +77,7 @@ export default function LoginForm() {
         className="w-full btn btn-primary py-3 text-lg"
         disabled={loading}
       >
-        {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+        {loading ? 'Logging in...' : 'Login'}
       </button>
     </form>
   );

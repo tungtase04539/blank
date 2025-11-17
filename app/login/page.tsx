@@ -14,7 +14,7 @@ export default async function LoginPage() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Quick Link</h1>
-          <p className="text-gray-600">Đăng nhập vào hệ thống</p>
+          <p className="text-gray-600">Login to your account</p>
         </div>
         
         <div className="bg-white rounded-2xl shadow-xl p-8">
