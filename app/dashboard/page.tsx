@@ -1,9 +1,6 @@
 import { requireAuth } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import Navbar from '@/components/Navbar';
-import TrafficChart from './TrafficChart';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
-import { DailyStats } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,89 +13,33 @@ async function getDashboardStats(userId: string) {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId);
   
-  // Get total visits and button clicks
+  // Get all links with button clicks
   const { data: links } = await supabase
     .from('links')
-    .select('id, telegram_clicks, web_clicks')
-    .eq('user_id', userId);
-  
-  const linkIds = links?.map(l => l.id) || [];
-  
-  const { count: totalVisits } = await supabase
-    .from('link_visits')
-    .select('*', { count: 'exact', head: true })
-    .in('link_id', linkIds.length > 0 ? linkIds : ['']);
+    .select('id, slug, video_url, telegram_clicks, web_clicks, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
   
   // Calculate total button clicks
   const totalTelegramClicks = links?.reduce((sum, link) => sum + (link.telegram_clicks || 0), 0) || 0;
   const totalWebClicks = links?.reduce((sum, link) => sum + (link.web_clicks || 0), 0) || 0;
+  const totalClicks = totalTelegramClicks + totalWebClicks;
   
-  // Get total online (sessions active in last 30 minutes)
-  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-  const { count: totalOnline } = await supabase
-    .from('online_sessions')
-    .select('*', { count: 'exact', head: true })
-    .in('link_id', linkIds.length > 0 ? linkIds : [''])
-    .gte('last_active', thirtyMinutesAgo);
-  
-  // Get visits for last 7 days
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = subDays(new Date(), 6 - i);
-    return {
-      date: format(date, 'yyyy-MM-dd'),
-      label: format(date, 'dd/MM'),
-      start: startOfDay(date).toISOString(),
-      end: endOfDay(date).toISOString(),
-    };
-  });
-  
-  const dailyStats: DailyStats[] = await Promise.all(
-    last7Days.map(async (day) => {
-      const { count } = await supabase
-        .from('link_visits')
-        .select('*', { count: 'exact', head: true })
-        .in('link_id', linkIds.length > 0 ? linkIds : [''])
-        .gte('visited_at', day.start)
-        .lte('visited_at', day.end);
-      
-      return {
-        date: day.label,
-        visits: count || 0,
-      };
-    })
-  );
-  
-  // Get top links
-  const topLinks = await Promise.all(
-    (links || []).slice(0, 5).map(async (link) => {
-      const { count } = await supabase
-        .from('link_visits')
-        .select('*', { count: 'exact', head: true })
-        .eq('link_id', link.id);
-      
-      const { data: linkData } = await supabase
-        .from('links')
-        .select('*')
-        .eq('id', link.id)
-        .single();
-      
-      return {
-        ...linkData,
-        visit_count: count || 0,
-      };
-    })
-  );
-  
-  topLinks.sort((a, b) => b.visit_count - a.visit_count);
+  // Get top links by total clicks (telegram + web)
+  const topLinks = (links || [])
+    .map(link => ({
+      ...link,
+      total_clicks: (link.telegram_clicks || 0) + (link.web_clicks || 0)
+    }))
+    .sort((a, b) => b.total_clicks - a.total_clicks)
+    .slice(0, 5);
   
   return {
     totalLinks: totalLinks || 0,
-    totalVisits: totalVisits || 0,
-    totalOnline: totalOnline || 0,
+    totalClicks,
     totalTelegramClicks,
     totalWebClicks,
-    dailyStats,
-    topLinks: topLinks.slice(0, 5),
+    topLinks,
   };
 }
 
@@ -117,7 +58,7 @@ export default async function DashboardPage() {
         </div>
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
               <div className="text-blue-100 text-sm font-medium">Total Links</div>
@@ -139,49 +80,12 @@ export default async function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <div className="text-4xl font-bold">{stats.totalVisits.toLocaleString()}</div>
+            <div className="text-4xl font-bold">{stats.totalClicks.toLocaleString()}</div>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-orange-100 text-sm font-medium">Online Now</div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-            </div>
-            <div className="text-4xl font-bold flex items-center">
-              {stats.totalOnline}
-              {stats.totalOnline > 0 && (
-                <span className="ml-3 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-orange-300 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
-                </span>
-              )}
-            </div>
-          </div>
-          
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-purple-100 text-sm font-medium">Avg Clicks/Link</div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-            </div>
-            <div className="text-4xl font-bold">
-              {stats.totalLinks > 0 ? Math.round(stats.totalVisits / stats.totalLinks) : 0}
-            </div>
-          </div>
-        </div>
-
-        {/* Button Clicks Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-blue-100 text-sm font-medium">📱 Telegram Clicks</div>
+              <div className="text-blue-100 text-sm font-medium">📱 Telegram</div>
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
@@ -189,12 +93,11 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="text-4xl font-bold">{stats.totalTelegramClicks.toLocaleString()}</div>
-            <p className="text-blue-100 text-sm mt-2">Total clicks on Telegram buttons</p>
           </div>
 
           <div className="bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-green-100 text-sm font-medium">🌐 Web Clicks</div>
+              <div className="text-green-100 text-sm font-medium">🌐 Web</div>
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -202,15 +105,9 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="text-4xl font-bold">{stats.totalWebClicks.toLocaleString()}</div>
-            <p className="text-green-100 text-sm mt-2">Total clicks on Web buttons</p>
           </div>
         </div>
-        
-        {/* Traffic Chart */}
-        <div className="card mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Traffic Last 7 Days</h2>
-          <TrafficChart data={stats.dailyStats} />
-        </div>
+
         
         {/* Top Links */}
         <div className="card">
@@ -232,8 +129,8 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900">{link.visit_count}</p>
-                    <p className="text-sm text-gray-600">visits</p>
+                    <p className="text-2xl font-bold text-gray-900">{link.total_clicks}</p>
+                    <p className="text-sm text-gray-600">clicks</p>
                   </div>
                 </div>
               ))}

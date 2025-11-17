@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import LinkPage from './LinkPage';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +57,11 @@ export default async function PublicLinkPage({ params }: PageProps) {
   const scripts = await getScripts(link.user_id);
   const globalSettings = await getGlobalSettings(link.user_id);
   
-  return <LinkPage link={link} scripts={scripts} globalSettings={globalSettings} userId={link.user_id} />;
+  return (
+    <>
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+      <LinkPage link={link} scripts={scripts} globalSettings={globalSettings} userId={link.user_id} />
+    </>
+  );
 }
 

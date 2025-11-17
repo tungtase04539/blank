@@ -14,36 +14,19 @@ async function getLinks(userId: string, sortBy: string = 'created') {
     .select('*')
     .eq('user_id', userId);
   
-  // Get visit counts and online count for each link
-  const linksWithCounts = await Promise.all(
-    (links || []).map(async (link) => {
-      // Total visits
-      const { count: visitCount } = await supabase
-        .from('link_visits')
-        .select('*', { count: 'exact', head: true })
-        .eq('link_id', link.id);
-      
-      // Online count (sessions active in last 30 minutes)
-      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-      const { count: onlineCount } = await supabase
-        .from('online_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('link_id', link.id)
-        .gte('last_active', thirtyMinutesAgo);
-      
-      return {
-        ...link,
-        visit_count: visitCount || 0,
-        online_count: onlineCount || 0,
-      };
-    })
-  );
+  // Add total clicks (telegram + web) to each link
+  const linksWithCounts = (links || []).map(link => ({
+    ...link,
+    visit_count: (link.telegram_clicks || 0) + (link.web_clicks || 0),
+    online_count: 0, // Removed online tracking - using Google Analytics
+  }));
   
   // Sort links
   if (sortBy === 'clicks') {
     linksWithCounts.sort((a, b) => b.visit_count - a.visit_count);
   } else if (sortBy === 'online') {
-    linksWithCounts.sort((a, b) => b.online_count - a.online_count);
+    // Online sort removed - fallback to created
+    linksWithCounts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   } else {
     linksWithCounts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }

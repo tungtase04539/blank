@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { Link, Script, GlobalSettings } from '@/lib/types';
-import { trackVisitAction } from './actions';
 
 interface LinkPageProps {
   link: Link;
@@ -13,10 +12,9 @@ interface LinkPageProps {
 
 export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
   useEffect(() => {
-    // Track visit
-    trackVisitAction(link.id);
+    // Visit tracking removed - using Google Analytics instead
     
-    // Handle smart redirect if enabled
+    // Handle random redirect if enabled
     if (link.redirect_enabled) {
       const checkAndRedirect = async () => {
         try {
