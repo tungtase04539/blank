@@ -41,6 +41,7 @@ export interface LinkVisit {
 
 export interface LinkWithVisitCount extends Link {
   visit_count: number;
+  online_count: number;
 }
 
 export interface DailyStats {

@@ -56,6 +56,15 @@ CREATE TABLE IF NOT EXISTS public.link_visits (
   referer TEXT
 );
 
+-- Table: online_sessions (track online viewers - 30 min timeout)
+CREATE TABLE IF NOT EXISTS public.online_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  link_id UUID NOT NULL REFERENCES public.links(id) ON DELETE CASCADE,
+  ip_address TEXT NOT NULL,
+  last_active TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(link_id, ip_address)
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_links_user_id ON public.links(user_id);
 CREATE INDEX IF NOT EXISTS idx_links_slug ON public.links(slug);
@@ -63,6 +72,8 @@ CREATE INDEX IF NOT EXISTS idx_scripts_user_id ON public.scripts(user_id);
 CREATE INDEX IF NOT EXISTS idx_link_visits_link_id ON public.link_visits(link_id);
 CREATE INDEX IF NOT EXISTS idx_link_visits_visited_at ON public.link_visits(visited_at);
 CREATE INDEX IF NOT EXISTS idx_global_settings_user_id ON public.global_settings(user_id);
+CREATE INDEX IF NOT EXISTS idx_online_sessions_link_id ON public.online_sessions(link_id);
+CREATE INDEX IF NOT EXISTS idx_online_sessions_last_active ON public.online_sessions(last_active);
 
 -- Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -70,6 +81,7 @@ ALTER TABLE public.links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scripts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.link_visits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.global_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.online_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Policies cho users
 CREATE POLICY "Users can view their own data" ON public.users
@@ -119,6 +131,19 @@ CREATE POLICY "Users can update their own settings" ON public.global_settings
   FOR UPDATE USING (true);
 
 CREATE POLICY "Users can delete their own settings" ON public.global_settings
+  FOR DELETE USING (true);
+
+-- Policies cho online_sessions
+CREATE POLICY "Anyone can create online sessions" ON public.online_sessions
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Anyone can update online sessions" ON public.online_sessions
+  FOR UPDATE USING (true);
+
+CREATE POLICY "Users can view online sessions" ON public.online_sessions
+  FOR SELECT USING (true);
+
+CREATE POLICY "Auto delete old sessions" ON public.online_sessions
   FOR DELETE USING (true);
 
 -- Tạo default admin user (password: admin123)
