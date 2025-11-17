@@ -14,7 +14,7 @@ export default function ScriptsList({ scripts }: ScriptsListProps) {
   const [deleting, setDeleting] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this script?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa script này?')) return;
     
     setDeleting(id);
     await deleteScriptAction(id);
@@ -30,8 +30,8 @@ export default function ScriptsList({ scripts }: ScriptsListProps) {
     return (
       <div className="card text-center py-12">
         <div className="text-6xl mb-4">📝</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No scripts yet</h3>
-        <p className="text-gray-600">Add your first script to start tracking</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Chưa có script nào</h3>
+        <p className="text-gray-600">Thêm script đầu tiên để bắt đầu tracking</p>
       </div>
     );
   }
@@ -85,14 +85,14 @@ export default function ScriptsList({ scripts }: ScriptsListProps) {
                     disabled={deleting === script.id}
                     className="btn btn-danger text-sm whitespace-nowrap"
                   >
-                    {deleting === script.id ? 'Deleting...' : '🗑️ Delete'}
+                    {deleting === script.id ? 'Đang xóa...' : '🗑️ Xóa'}
                   </button>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-gray-500 text-center py-4">No scripts at this location</p>
+          <p className="text-gray-500 text-center py-4">Chưa có script nào ở vị trí này</p>
         )}
       </div>
     </div>

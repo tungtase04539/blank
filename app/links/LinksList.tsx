@@ -72,7 +72,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
             </svg>
           </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">No links yet</h3>
-          <p className="text-gray-600 mb-6">Create your first link to start tracking and analyzing</p>
+          <p className="text-gray-600 mb-6">Create your first link to start tracking and analytics</p>
           <Link href="/links/create" className="btn btn-primary inline-flex items-center space-x-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -111,7 +111,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                     <h3 className="text-2xl font-bold text-white">
                       Successfully created {newLinks.length} link{newLinks.length > 1 ? 's' : ''}!
                     </h3>
-                    <p className="text-green-100 text-sm">Click to copy link and share immediately</p>
+                    <p className="text-green-100 text-sm">Click to copy link and share now</p>
                   </div>
                 </div>
                 <button
@@ -171,7 +171,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
-                          title="Xem link"
+                          title="View link"
                         >
                           <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -190,7 +190,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                 onClick={closeModal}
                 className="w-full btn btn-primary py-3"
               >
-                Đóng
+                Close
               </button>
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-blue-100 text-sm font-medium">Tổng Links</div>
+            <div className="text-blue-100 text-sm font-medium">Total Links</div>
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
@@ -213,7 +213,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
 
         <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-green-100 text-sm font-medium">Tổng Clicks</div>
+            <div className="text-green-100 text-sm font-medium">Total Clicks</div>
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
@@ -225,7 +225,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
 
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-purple-100 text-sm font-medium">Đang Online</div>
+            <div className="text-purple-100 text-sm font-medium">Online Now</div>
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -240,7 +240,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
 
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-orange-100 text-sm font-medium">TB Click/Link</div>
+            <div className="text-orange-100 text-sm font-medium">Avg Click/Link</div>
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -255,7 +255,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
       <div className="bg-white rounded-xl shadow-md p-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-semibold text-gray-700">Sắp xếp:</span>
+            <span className="text-sm font-semibold text-gray-700">Sort by:</span>
             <div className="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50">
               <button
                 onClick={() => handleSortChange('created')}
@@ -269,7 +269,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span>Latest</span>
+                  <span>Newest</span>
                 </span>
               </button>
               <button
@@ -284,7 +284,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
-                  <span>Most Clicks</span>
+                  <span>Most clicks</span>
                 </span>
               </button>
               <button
@@ -306,7 +306,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
           </div>
           
           <div className="text-sm text-gray-500">
-            Hiển thị <strong className="text-gray-900">{links.length}</strong> links
+            Showing <strong className="text-gray-900">{links.length}</strong> links
           </div>
         </div>
       </div>
@@ -431,7 +431,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn btn-secondary text-sm"
-                  title="Xem link"
+                  title="View link"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

@@ -22,7 +22,7 @@ export default function Navbar({ user }: NavbarProps) {
   ];
 
   if (user.role === 'admin') {
-    navItems.push({ href: '/admin/users', label: 'Users' });
+    navItems.push({ href: '/admin/users', label: 'Users Management' });
   }
 
   const handleLogout = async () => {

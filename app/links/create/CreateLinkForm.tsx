@@ -36,7 +36,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
       const urls = videoUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0);
       
       if (urls.length === 0) {
-        setError('Please enter at least 1 video URL');
+        setError('Vui lòng nhập ít nhất 1 video URL');
         setLoading(false);
         return;
       }
@@ -56,7 +56,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           // Redirect with new slugs in URL params
           router.push(`/links?new=${result.slugs.join(',')}`);
         } else {
-          setError(result.error || 'Failed to create links');
+          setError(result.error || 'Không thể tạo links');
         }
       } else {
         // Single link
@@ -74,11 +74,11 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           // Redirect with single new slug
           router.push(`/links?new=${slug}`);
         } else {
-          setError(result.error || 'Failed to create link');
+          setError(result.error || 'Không thể tạo link');
         }
       }
     } catch (err) {
-      setError('An error occurred');
+      setError('Có lỗi xảy ra');
     } finally {
       setLoading(false);
     }
@@ -92,7 +92,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-          Slug (Short URL) - Auto-generated *
+          Slug (URL ngắn) - Tự động generate *
         </label>
         <div className="flex items-center gap-2">
           <span className="text-gray-500">/</span>
@@ -110,11 +110,11 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
             className="btn btn-secondary whitespace-nowrap"
             disabled={loading}
           >
-            🔄 Regenerate
+            🔄 Tạo mới
           </button>
         </div>
         <p className="text-sm text-gray-500 mt-1">
-          Format: 5 random characters + "mp4" (Example: {slug})
+          Format: 5 ký tự ngẫu nhiên + "mp4" (VD: {slug})
         </p>
       </div>
 
@@ -131,18 +131,18 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
 https://example.com/video2.webm
 https://example.com/video3.webm
 
-(One URL per line - Auto create multiple links)"
+(Mỗi dòng 1 video URL - Tự động tạo nhiều links)"
           rows={6}
           required
           disabled={loading}
         />
         <p className="text-sm text-gray-500 mt-1">
-          Enter one URL per line. Multiple URLs → auto create multiple links with random slugs
+          Nhập mỗi URL một dòng. Nếu nhiều URLs → tự động tạo nhiều links với slug random
         </p>
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bottom Buttons (Optional)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Buttons Ở Bottom (Tùy chọn)</h3>
         
         <div className="mb-4">
           <label className="flex items-center space-x-3 cursor-pointer">
@@ -154,7 +154,7 @@ https://example.com/video3.webm
               disabled={loading}
             />
             <span className="text-sm font-medium text-gray-700">
-              Use custom buttons for this link (default uses global settings)
+              Sử dụng buttons riêng cho link này (mặc định dùng global settings)
             </span>
           </label>
         </div>
@@ -195,14 +195,14 @@ https://example.com/video3.webm
         
         {!useCustomButtons && (
           <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-            💡 This link will use buttons from <strong>Global Settings</strong>. 
-            Go to <strong>Settings</strong> menu to configure global buttons for all links.
+            💡 Link này sẽ sử dụng buttons từ <strong>Global Settings</strong>. 
+            Vào menu <strong>Settings</strong> để cấu hình buttons chung cho tất cả links.
           </p>
         )}
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Redirect Settings (Optional)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Cài Đặt Redirect (Tùy chọn)</h3>
         
         <div className="mb-4">
           <label className="flex items-center space-x-3 cursor-pointer">
@@ -213,14 +213,14 @@ https://example.com/video3.webm
               className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
               disabled={loading}
             />
-            <span className="text-sm font-medium text-gray-700">Enable auto redirect</span>
+            <span className="text-sm font-medium text-gray-700">Bật redirect tự động</span>
           </label>
         </div>
 
         {redirectEnabled && (
           <div>
             <label htmlFor="destinationUrl" className="block text-sm font-medium text-gray-700 mb-2">
-              Destination URL
+              URL đích
             </label>
             <input
               id="destinationUrl"
@@ -231,7 +231,7 @@ https://example.com/video3.webm
               placeholder="https://example.com/destination"
               disabled={loading}
             />
-            <p className="text-sm text-gray-500 mt-1">Visitors will be redirected to this URL</p>
+            <p className="text-sm text-gray-500 mt-1">Người xem sẽ được chuyển hướng đến URL này</p>
           </div>
         )}
       </div>
@@ -248,7 +248,7 @@ https://example.com/video3.webm
           className="btn btn-primary flex-1"
           disabled={loading}
         >
-          {loading ? 'Creating...' : 'Create Link'}
+          {loading ? 'Đang tạo...' : 'Tạo Link'}
         </button>
         <button
           type="button"
@@ -256,7 +256,7 @@ https://example.com/video3.webm
           className="btn btn-secondary"
           disabled={loading}
         >
-          Cancel
+          Hủy
         </button>
       </div>
     </form>

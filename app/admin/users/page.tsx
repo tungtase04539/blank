@@ -26,8 +26,8 @@ export default async function AdminUsersPage() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Manage Users</h1>
-          <p className="text-gray-600 mt-2">Create and manage user accounts</p>
+          <h1 className="text-3xl font-bold text-gray-900">Quản Lý Users</h1>
+          <p className="text-gray-600 mt-2">Tạo và quản lý tài khoản người dùng</p>
         </div>
         
         <UsersList users={users} currentUserId={user.id} />

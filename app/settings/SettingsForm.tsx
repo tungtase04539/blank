@@ -61,7 +61,7 @@ export default function SettingsForm({ userId, initialSettings }: SettingsFormPr
           disabled={loading}
         />
         <p className="text-sm text-gray-500 mt-1">
-          Your Telegram channel/group URL
+          URL Telegram channel/group của bạn
         </p>
       </div>
 
@@ -100,7 +100,7 @@ export default function SettingsForm({ userId, initialSettings }: SettingsFormPr
         className="btn btn-primary w-full"
         disabled={loading}
       >
-        {loading ? 'Saving...' : '💾 Save Settings'}
+        {loading ? 'Đang lưu...' : '💾 Lưu Settings'}
       </button>
     </form>
   );

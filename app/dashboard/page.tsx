@@ -158,7 +158,7 @@ export default async function DashboardPage() {
           
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-purple-100 text-sm font-medium">Avg Click/Link</div>
+              <div className="text-purple-100 text-sm font-medium">Avg Clicks/Link</div>
               <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
         
         {/* Traffic Chart */}
         <div className="card mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Last 7 Days Traffic</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Traffic Last 7 Days</h2>
           <TrafficChart data={stats.dailyStats} />
         </div>
         
