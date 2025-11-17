@@ -20,10 +20,6 @@ export default async function LoginPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <LoginForm />
         </div>
-        
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Tài khoản mặc định: admin@example.com / admin123</p>
-        </div>
       </div>
     </div>
   );
