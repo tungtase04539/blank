@@ -1,0 +1,101 @@
+'use client';
+
+import { useEffect } from 'react';
+import { Link, Script } from '@/lib/types';
+import { trackVisitAction } from './actions';
+
+interface LinkPageProps {
+  link: Link;
+  scripts: Script[];
+}
+
+export default function LinkPage({ link, scripts }: LinkPageProps) {
+  useEffect(() => {
+    // Track visit
+    trackVisitAction(link.id);
+    
+    // Handle redirect if enabled
+    if (link.redirect_enabled && link.destination_url) {
+      const timer = setTimeout(() => {
+        window.location.href = link.destination_url!;
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [link]);
+
+  const headScripts = scripts.filter(s => s.location === 'head');
+  const bodyScripts = scripts.filter(s => s.location === 'body');
+
+  return (
+    <>
+      <head>
+        {headScripts.map((script) => (
+          <script
+            key={script.id}
+            dangerouslySetInnerHTML={{ __html: script.content }}
+          />
+        ))}
+      </head>
+      
+      <div className="min-h-screen bg-black flex flex-col">
+        {/* Video Container */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <video 
+            controls 
+            className="w-full max-w-4xl"
+            autoPlay
+            playsInline
+          >
+            <source src={link.video_url} type="video/webm" />
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        
+        {/* Fixed Bottom Buttons */}
+        {(link.telegram_url || link.web_url) && (
+          <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
+            <div className="max-w-4xl mx-auto grid grid-cols-2 gap-4">
+              {link.telegram_url && (
+                <a
+                  href={link.telegram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                  </svg>
+                  <span>Telegram</span>
+                </a>
+              )}
+              
+              {link.web_url && (
+                <a
+                  href={link.web_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                  <span>Website</span>
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Body Scripts */}
+        {bodyScripts.map((script) => (
+          <script
+            key={script.id}
+            dangerouslySetInnerHTML={{ __html: script.content }}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
