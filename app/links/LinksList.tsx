@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LinkWithVisitCount } from '@/lib/types';
 import { deleteLinkAction, toggleRedirectAction } from './actions';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 interface LinksListProps {
@@ -14,8 +14,26 @@ interface LinksListProps {
 
 export default function LinksList({ links, appUrl, currentSort }: LinksListProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [deleting, setDeleting] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showNewLinksModal, setShowNewLinksModal] = useState(false);
+  const [newLinks, setNewLinks] = useState<LinkWithVisitCount[]>([]);
+
+  // Check for newly created links
+  useEffect(() => {
+    const newSlugs = searchParams.get('new');
+    if (newSlugs) {
+      const slugsArray = newSlugs.split(',');
+      const createdLinks = links.filter(link => slugsArray.includes(link.slug));
+      if (createdLinks.length > 0) {
+        setNewLinks(createdLinks);
+        setShowNewLinksModal(true);
+        // Clean URL
+        router.replace('/links', { scroll: false });
+      }
+    }
+  }, [searchParams, links, router]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Bạn có chắc chắn muốn xóa link này?')) return;
@@ -69,8 +87,116 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
   const totalClicks = links.reduce((sum, link) => sum + link.visit_count, 0);
   const totalOnline = links.reduce((sum, link) => sum + link.online_count, 0);
 
+  const closeModal = () => {
+    setShowNewLinksModal(false);
+    setNewLinks([]);
+  };
+
   return (
     <div className="space-y-6">
+      {/* New Links Modal */}
+      {showNewLinksModal && newLinks.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden animate-scale-in">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">
+                      Tạo thành công {newLinks.length} link{newLinks.length > 1 ? 's' : ''}!
+                    </h3>
+                    <p className="text-green-100 text-sm">Click để copy link và chia sẻ ngay</p>
+                  </div>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="text-white/80 hover:text-white transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-140px)]">
+              <div className="space-y-3">
+                {newLinks.map((link, index) => (
+                  <div
+                    key={link.id}
+                    className="group bg-gradient-to-r from-gray-50 to-blue-50 hover:from-blue-50 hover:to-indigo-50 rounded-xl p-4 border-2 border-gray-200 hover:border-blue-300 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
+                          {index + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-mono text-sm text-gray-600 mb-1">/{link.slug}</div>
+                          <div className="text-xs text-blue-600 truncate font-medium">
+                            {appUrl}/{link.slug}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2 ml-4">
+                        <button
+                          onClick={() => copyToClipboard(link.slug, link.id)}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                        >
+                          {copiedId === link.id ? (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span>Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                        <a
+                          href={`/${link.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+                          title="Xem link"
+                        >
+                          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <button
+                onClick={closeModal}
+                className="w-full btn btn-primary py-3"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">

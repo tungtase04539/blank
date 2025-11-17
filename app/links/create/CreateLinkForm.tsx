@@ -52,8 +52,9 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           webUrl: useCustomButtons ? (webUrl || null) : null,
         });
 
-        if (result.success) {
-          router.push('/links');
+        if (result.success && result.slugs) {
+          // Redirect with new slugs in URL params
+          router.push(`/links?new=${result.slugs.join(',')}`);
         } else {
           setError(result.error || 'Không thể tạo links');
         }
@@ -70,7 +71,8 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
         });
 
         if (result.success) {
-          router.push('/links');
+          // Redirect with single new slug
+          router.push(`/links?new=${slug}`);
         } else {
           setError(result.error || 'Không thể tạo link');
         }

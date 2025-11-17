@@ -112,7 +112,11 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     }
 
     revalidatePath('/links');
-    return { success: true, count: linksToCreate.length };
+    return { 
+      success: true, 
+      count: linksToCreate.length,
+      slugs: linksToCreate.map(link => link.slug)
+    };
   } catch (error) {
     return { success: false, error: 'Có lỗi xảy ra' };
   }
