@@ -60,27 +60,40 @@ export async function login(email: string, password: string) {
   }
 
   // Create session using Supabase Auth
-  const { error: signInError } = await supabase.auth.signInWithPassword({
+  // Try to sign in first
+  let authResult = await supabase.auth.signInWithPassword({
     email,
-    password: user.id, // Use user ID as password for Supabase Auth
+    password: user.id,
   });
 
-  if (signInError) {
-    // If user doesn't exist in Auth, create them
-    const { error: signUpError } = await supabase.auth.signUp({
+  // If user doesn't exist in Auth, create them with auto-confirm
+  if (authResult.error) {
+    const signUpResult = await supabase.auth.signUp({
       email,
       password: user.id,
+      options: {
+        emailRedirectTo: undefined,
+        data: {
+          email_confirmed: true
+        }
+      }
     });
 
-    if (signUpError) {
-      return { success: false, error: 'Authentication failed' };
+    if (signUpResult.error) {
+      console.error('SignUp error:', signUpResult.error);
+      return { success: false, error: 'Authentication failed: ' + signUpResult.error.message };
     }
 
-    // Sign in again
-    await supabase.auth.signInWithPassword({
+    // Try to sign in again after signup
+    authResult = await supabase.auth.signInWithPassword({
       email,
       password: user.id,
     });
+
+    if (authResult.error) {
+      console.error('SignIn error after signup:', authResult.error);
+      return { success: false, error: 'Authentication failed: ' + authResult.error.message };
+    }
   }
 
   return { success: true, user };
