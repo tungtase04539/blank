@@ -66,10 +66,13 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
           <video 
             controls 
             className="w-full max-w-4xl"
-            autoPlay
             playsInline
+            autoPlay
+            preload="auto"
+            muted
+            src={link.video_url}
+            style={{ maxHeight: '90vh' }}
           >
-            <source src={link.video_url} type="video/webm" />
             Your browser does not support the video tag.
           </video>
         </div>
