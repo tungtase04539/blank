@@ -47,6 +47,75 @@ export default function GoogleAnalyticsEmbed() {
             <div className="h-24 bg-gray-200 rounded-lg"></div>
           </div>
         </div>
+        <p className="text-xs text-gray-400 text-center mt-4">Loading Google Analytics data...</p>
+      </div>
+    );
+  }
+
+  // Check if API is not configured
+  const isApiNotConfigured = stats && stats.activeUsers === 0 && stats.pageViews === 0;
+  
+  if (isApiNotConfigured) {
+    return (
+      <div className="card">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
+          📊 Real-time Analytics (Last 30 Minutes)
+        </h2>
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+          <div className="flex items-start space-x-4">
+            <div className="text-4xl">ℹ️</div>
+            <div>
+              <h3 className="font-bold text-blue-900 text-lg mb-2">
+                Google Analytics Data API Setup Required
+              </h3>
+              <p className="text-blue-800 mb-4">
+                Your Google Analytics is tracking visitors successfully! To display real-time data here, you need to setup the Google Analytics Data API.
+              </p>
+              
+              <div className="bg-white rounded-lg p-4 mb-4">
+                <p className="text-sm font-semibold text-gray-700 mb-2">Quick Setup (5 minutes):</p>
+                <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
+                  <li>Enable Google Analytics Data API in Google Cloud Console</li>
+                  <li>Create Service Account & download JSON key</li>
+                  <li>Grant Service Account access to your GA Property</li>
+                  <li>Add 3 environment variables to Vercel:
+                    <ul className="ml-6 mt-1 space-y-1">
+                      <li>• <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">GA_PROPERTY_ID</code></li>
+                      <li>• <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">GA_CLIENT_EMAIL</code></li>
+                      <li>• <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">GA_PRIVATE_KEY</code></li>
+                    </ul>
+                  </li>
+                  <li>Redeploy your app</li>
+                </ol>
+              </div>
+
+              <div className="flex items-center space-x-2 text-sm text-blue-700">
+                <span>📚</span>
+                <span>Check <code className="bg-blue-100 px-2 py-1 rounded">GOOGLE_ANALYTICS_SETUP.md</code> for detailed instructions</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Show current tracking status */}
+        <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center space-x-2 text-green-800">
+            <span>✅</span>
+            <span className="font-semibold">Good News:</span>
+          </div>
+          <p className="text-sm text-green-700 mt-2">
+            Your Google Analytics tracking is working! Visit your{' '}
+            <a 
+              href="https://analytics.google.com/analytics/web/#/realtime" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-semibold hover:text-green-900"
+            >
+              GA Realtime Report
+            </a>
+            {' '}to see live visitors.
+          </p>
+        </div>
       </div>
     );
   }
