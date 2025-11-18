@@ -45,32 +45,46 @@ export async function POST(request: NextRequest) {
 
     const today = new Date().toISOString().split('T')[0];
 
-    // Process each link's events
-    const rpCalls: Array<() => Promise<any>> = [];
+    // Process each link's events - execute sequentially to avoid type issues
+    let totalProcessed = 0;
+    let totalErrors = 0;
 
     // Convert Map values to array for ES5 compatibility
-    eventsByLink.forEach(({ linkId, sessionIds }) => {
-      // One view increment per link
-      rpCalls.push(() =>
-        supabase.rpc('increment_daily_views', {
-          p_link_id: linkId,
-          p_date: today,
-        }).then(r => r)
-      );
+    for (const entry of Array.from(eventsByLink.values())) {
+      const { linkId, sessionIds } = entry;
 
-      // One session update per unique sessionId
-      sessionIds.forEach((sessionId) => {
-        rpCalls.push(() =>
-          supabase.rpc('update_online_session', {
-            p_link_id: linkId,
-            p_session_id: sessionId,
-          }).then(r => r)
-        );
+      // Increment daily views
+      const viewResult = await supabase.rpc('increment_daily_views', {
+        p_link_id: linkId,
+        p_date: today,
       });
-    });
 
-    // Execute all in parallel
-    const results = await Promise.allSettled(rpCalls.map(fn => fn()));
+      if (viewResult.error) {
+        totalErrors++;
+      } else {
+        totalProcessed++;
+      }
+
+      // Update online sessions
+      for (const sessionId of Array.from(sessionIds)) {
+        const sessionResult = await supabase.rpc('update_online_session', {
+          p_link_id: linkId,
+          p_session_id: sessionId,
+        });
+
+        if (sessionResult.error) {
+          totalErrors++;
+        } else {
+          totalProcessed++;
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      processed: events.length,
+      errors: totalErrors,
+    });
 
     // Count errors
     const errors = results.filter(r => r.status === 'rejected').length;
