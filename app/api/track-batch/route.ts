@@ -85,15 +85,6 @@ export async function POST(request: NextRequest) {
       processed: events.length,
       errors: totalErrors,
     });
-
-    // Count errors
-    const errors = results.filter(r => r.status === 'rejected').length;
-
-    return NextResponse.json({
-      success: true,
-      processed: events.length,
-      errors,
-    });
   } catch (error: any) {
     console.error('Batch track error:', error);
     return NextResponse.json(
