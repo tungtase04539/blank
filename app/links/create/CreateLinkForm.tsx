@@ -142,7 +142,7 @@ https://example.com/video3.webm
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bottom Buttons (Optional)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bottom Buttons</h3>
         
         <div className="mb-4">
           <label className="flex items-center space-x-3 cursor-pointer">
@@ -154,9 +154,10 @@ https://example.com/video3.webm
               disabled={loading}
             />
             <span className="text-sm font-medium text-gray-700">
-              Use custom buttons for this link (default uses global settings)
+              Add buttons (Telegram & Website)
             </span>
           </label>
+          <p className="text-xs text-gray-500 mt-1 ml-8">Leave empty to use global settings</p>
         </div>
 
         {useCustomButtons && (
