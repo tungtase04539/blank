@@ -11,12 +11,28 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   try {
-    // Try to get from cache first (30 second cache)
+    // ✅ OPTIMIZED: Stale-while-revalidate with 60s cache (optimized from 30s)
     const cacheKey = 'realtime-analytics';
-    const cachedData = analyticsCache.get(cacheKey);
+    const { data: cachedData, isStale } = analyticsCache.getWithStale(cacheKey);
     
     if (cachedData) {
-      console.log('📦 Serving realtime analytics from cache');
+      console.log(`📦 Serving realtime analytics from cache (${isStale ? 'stale' : 'fresh'})`);
+      
+      // If stale, refresh in background
+      if (isStale) {
+        getRealtimeUsers()
+          .then(activeUsers => {
+            const response = {
+              activeUsers,
+              pageViews: activeUsers * 1.5,
+              topPages: [],
+            };
+            analyticsCache.set(cacheKey, response, 60 * 1000);
+            console.log('✅ Background realtime refresh completed');
+          })
+          .catch(err => console.error('⚠️ Background realtime refresh failed:', err));
+      }
+      
       return NextResponse.json(cachedData);
     }
 
@@ -25,23 +41,21 @@ export async function GET() {
     // Fetch real-time active users
     const activeUsers = await getRealtimeUsers();
     
-    // For now, return basic stats
-    // You can expand this to include more GA realtime data
     const response = {
       activeUsers,
       pageViews: activeUsers * 1.5, // Approximate (you can fetch real data)
       topPages: [], // Can be populated from GA realtime API
     };
 
-    // Cache for 30 seconds (aggressive refresh for realtime data)
-    analyticsCache.set(cacheKey, response, 30 * 1000);
+    // Cache for 60 seconds (optimized from 30s for realtime data)
+    analyticsCache.set(cacheKey, response, 60 * 1000);
 
     return NextResponse.json(response);
   } catch (error) {
     console.error('Realtime analytics API error:', error);
     
     // Try to serve stale cache if available
-    const staleData = analyticsCache.get('realtime-analytics');
+    const { data: staleData } = analyticsCache.getWithStale('realtime-analytics');
     if (staleData) {
       console.log('⚠️ Serving stale realtime cache due to error');
       return NextResponse.json(staleData);

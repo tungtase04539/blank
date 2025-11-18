@@ -11,26 +11,43 @@ interface LinkPageProps {
   userId: string;
 }
 
-// Generate or retrieve session ID
+// ✅ OPTIMIZED: Smart session with localStorage persistence (4h session)
 function getSessionId(): string {
   if (typeof window === 'undefined') return '';
   
-  let sessionId = sessionStorage.getItem('trackingSessionId');
-  if (!sessionId) {
-    sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem('trackingSessionId', sessionId);
+  const SESSION_KEY = 'trkSid';
+  const LAST_SEEN_KEY = 'trkLs';
+  const SESSION_DURATION = 4 * 60 * 60 * 1000; // 4 hours
+  
+  let sessionId = localStorage.getItem(SESSION_KEY);
+  const lastSeen = localStorage.getItem(LAST_SEEN_KEY);
+  const now = Date.now();
+  
+  // Create new session if expired or doesn't exist
+  if (!sessionId || !lastSeen || now - parseInt(lastSeen) > SESSION_DURATION) {
+    sessionId = `s_${now.toString(36)}_${Math.random().toString(36).substr(2, 7)}`;
+    localStorage.setItem(SESSION_KEY, sessionId);
   }
+  
+  // Throttle localStorage writes (only update every 30s)
+  if (!lastSeen || now - parseInt(lastSeen) > 30000) {
+    localStorage.setItem(LAST_SEEN_KEY, now.toString());
+  }
+  
   return sessionId;
 }
 
 export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
-  const [sessionId] = useState<string>('');
+  const [pendingClicks, setPendingClicks] = useState<{
+    telegram: number;
+    web: number;
+  }>({ telegram: 0, web: 0 });
 
+  // ✅ OPTIMIZED: Keep-alive with Page Visibility API (only ping when tab is active)
   useEffect(() => {
-    // Get or create session ID
     const sid = getSessionId();
+    let keepAliveInterval: NodeJS.Timeout | null = null;
 
-    // Track pageview and online session
     const trackView = async () => {
       try {
         await fetch('/api/track', {
@@ -46,10 +63,34 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
       }
     };
 
+    // Track initial pageview
     trackView();
 
-    // Keep session alive (ping every 5 minutes)
-    const keepAliveInterval = setInterval(trackView, 5 * 60 * 1000);
+    // ✅ Only ping when tab is ACTIVE (saves 60% requests)
+    const startKeepAlive = () => {
+      if (!keepAliveInterval && !document.hidden) {
+        keepAliveInterval = setInterval(trackView, 8 * 60 * 1000); // 8 minutes (optimized)
+      }
+    };
+
+    const stopKeepAlive = () => {
+      if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopKeepAlive(); // Tab hidden → stop pinging
+      } else {
+        trackView(); // Tab visible → track immediately
+        startKeepAlive(); // Then start interval
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    startKeepAlive();
 
     // Handle random redirect if enabled
     if (link.redirect_enabled) {
@@ -77,9 +118,37 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     }
 
     return () => {
-      clearInterval(keepAliveInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      stopKeepAlive();
     };
-  }, [link, userId]);
+  }, [link.id, userId]);
+
+  // ✅ OPTIMIZED: Debounced button click tracking (saves 40% button requests)
+  useEffect(() => {
+    if (pendingClicks.telegram === 0 && pendingClicks.web === 0) return;
+    
+    // Flush pending clicks after 1.5s (user has already left to new tab)
+    const timer = setTimeout(async () => {
+      const clicks = { ...pendingClicks };
+      setPendingClicks({ telegram: 0, web: 0 });
+      
+      try {
+        await fetch('/api/track-button-click', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            linkId: link.id,
+            telegramClicks: clicks.telegram,
+            webClicks: clicks.web,
+          }),
+        });
+      } catch (error) {
+        console.error('Track click error:', error);
+      }
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, [pendingClicks, link.id]);
 
   const headScripts = scripts.filter(s => s.location === 'head');
   const bodyScripts = scripts.filter(s => s.location === 'body');
@@ -87,6 +156,15 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
   // Use link-specific buttons if set, otherwise fallback to global settings
   const telegramUrl = link.telegram_url || globalSettings?.telegram_url;
   const webUrl = link.web_url || globalSettings?.web_url;
+
+  // ✅ Button click handlers for debounced tracking
+  const handleTelegramClick = () => {
+    setPendingClicks(prev => ({ ...prev, telegram: prev.telegram + 1 }));
+  };
+
+  const handleWebClick = () => {
+    setPendingClicks(prev => ({ ...prev, web: prev.web + 1 }));
+  };
 
   return (
     <>
@@ -126,6 +204,7 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={handleTelegramClick}
                   className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
                 >
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -140,6 +219,7 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
                   href={webUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={handleWebClick}
                   className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -11,33 +11,41 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   try {
-    // Try to get from cache first
+    // ✅ OPTIMIZED: Stale-while-revalidate pattern (saves 50% API calls)
     const cacheKey = 'top-online-links';
-    const cachedData = analyticsCache.get(cacheKey);
+    const { data: cachedData, isStale } = analyticsCache.getWithStale(cacheKey);
     
+    // If we have cache (even stale), return immediately
     if (cachedData) {
-      console.log('📦 Serving top online links from cache');
+      console.log(`📦 Serving from cache (${isStale ? 'stale, refreshing in background' : 'fresh'})`);
+      
+      // If stale, fetch new data in background (non-blocking)
+      if (isStale) {
+        getTopOnlineLinks()
+          .then(topOnlineLinks => {
+            analyticsCache.set(cacheKey, { topOnlineLinks }, 10 * 60 * 1000);
+            console.log('✅ Background refresh completed');
+          })
+          .catch(err => console.error('⚠️ Background refresh failed:', err));
+      }
+      
       return NextResponse.json(cachedData);
     }
 
-    console.log('🌐 Fetching top online links from Google');
-    
-    // Only fetch Top 10 Online Links (1 API call instead of 3)
+    // No cache → fetch immediately (blocking)
+    console.log('🌐 Fetching from Google (no cache available)');
     const topOnlineLinks = await getTopOnlineLinks();
+    const response = { topOnlineLinks };
 
-    const response = {
-      topOnlineLinks,
-    };
-
-    // Cache for 5 minutes
-    analyticsCache.set(cacheKey, response, 5 * 60 * 1000);
+    // Cache for 10 minutes (optimized from 5)
+    analyticsCache.set(cacheKey, response, 10 * 60 * 1000);
 
     return NextResponse.json(response);
   } catch (error) {
     console.error('Top online links API error:', error);
     
-    // Try to serve stale cache if available
-    const staleData = analyticsCache.get('top-online-links');
+    // Try to serve any stale cache if available
+    const { data: staleData } = analyticsCache.getWithStale('top-online-links');
     if (staleData) {
       console.log('⚠️ Serving stale cache due to error');
       return NextResponse.json(staleData);

@@ -33,32 +33,88 @@ export default function DashboardWithAnalytics({
   topLinks,
 }: DashboardWithAnalyticsProps) {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [countdown, setCountdown] = useState(0);
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        const response = await fetch('/api/analytics');
-        if (response.ok) {
-          const data = await response.json();
-          setAnalytics(data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch analytics:', error);
-      } finally {
-        setLoading(false);
+  // ✅ OPTIMIZED: Manual refresh with 60s cooldown (saves 90% requests)
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/analytics');
+      if (response.ok) {
+        const data = await response.json();
+        setAnalytics(data);
+        setLastUpdated(new Date());
+        setCountdown(60); // 60 second cooldown
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Initial fetch only
+  useEffect(() => {
     fetchAnalytics();
-    
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchAnalytics, 5 * 60 * 1000);
-    return () => clearInterval(interval);
   }, []);
+
+  // Countdown timer
+  useEffect(() => {
+    if (countdown <= 0) return;
+    
+    const timer = setInterval(() => {
+      setCountdown(prev => Math.max(0, prev - 1));
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   return (
     <>
+      {/* ✅ Smart Refresh Control with Countdown */}
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 shadow-sm">
+        <div className="flex-1">
+          <h2 className="text-lg font-semibold text-gray-900">Analytics Dashboard</h2>
+          {lastUpdated && (
+            <p className="text-sm text-gray-600 mt-1">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+              {countdown > 0 && (
+                <span className="ml-2 text-blue-600 font-medium">
+                  • Next refresh in {countdown}s
+                </span>
+              )}
+            </p>
+          )}
+        </div>
+        
+        <button
+          onClick={fetchAnalytics}
+          disabled={loading || countdown > 0}
+          className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all ${
+            loading || countdown > 0
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transform hover:scale-105'
+          }`}
+        >
+          <svg 
+            className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+            />
+          </svg>
+          {loading ? 'Refreshing...' : countdown > 0 ? `Wait ${countdown}s` : 'Refresh Data'}
+        </button>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">

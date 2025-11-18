@@ -1,5 +1,5 @@
-// Simple in-memory cache for Google Analytics data
-// Reduces API calls by caching results for N minutes
+// ✅ OPTIMIZED: In-memory cache with Stale-While-Revalidate pattern
+// Reduces API calls by caching results and serving stale data when needed
 
 interface CacheEntry<T> {
   data: T;
@@ -8,7 +8,8 @@ interface CacheEntry<T> {
 
 class AnalyticsCache {
   private cache: Map<string, CacheEntry<any>> = new Map();
-  private defaultTTL: number = 5 * 60 * 1000; // 5 minutes
+  private defaultTTL: number = 10 * 60 * 1000; // 10 minutes (optimized from 5)
+  private staleTTL: number = 30 * 60 * 1000; // 30 minutes for stale data
 
   set<T>(key: string, data: T, ttl?: number): void {
     this.cache.set(key, {
@@ -33,6 +34,32 @@ class AnalyticsCache {
     return entry.data as T;
   }
 
+  // ✅ NEW: Get with stale-while-revalidate pattern
+  // Returns stale data if available, with flag indicating if it's stale
+  getWithStale<T>(key: string): { data: T | null; isStale: boolean } {
+    const entry = this.cache.get(key);
+    
+    if (!entry) {
+      return { data: null, isStale: false };
+    }
+
+    const now = Date.now();
+    
+    // Fresh data (within TTL)
+    if (now <= entry.timestamp) {
+      return { data: entry.data as T, isStale: false };
+    }
+    
+    // Stale but acceptable (within stale TTL)
+    if (now <= entry.timestamp + this.staleTTL) {
+      return { data: entry.data as T, isStale: true };
+    }
+
+    // Too old, delete and return null
+    this.cache.delete(key);
+    return { data: null, isStale: false };
+  }
+
   clear(): void {
     this.cache.clear();
   }
@@ -43,7 +70,8 @@ class AnalyticsCache {
     const keysToDelete: string[] = [];
     
     this.cache.forEach((entry, key) => {
-      if (now > entry.timestamp) {
+      // Only delete if past stale TTL
+      if (now > entry.timestamp + this.staleTTL) {
         keysToDelete.push(key);
       }
     });
