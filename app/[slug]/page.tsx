@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import LinkPage from './LinkPage';
-import GoogleAnalytics from '@/components/GoogleAnalytics';
+import Script from 'next/script';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,7 +59,20 @@ export default async function PublicLinkPage({ params }: PageProps) {
   
   return (
     <>
-      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+      {/* Google Analytics - Hardcoded for reliability */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-P0Y80ZBPPC"
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-P0Y80ZBPPC');
+        `}
+      </Script>
+      
       <LinkPage link={link} scripts={scripts} globalSettings={globalSettings} userId={link.user_id} />
     </>
   );
