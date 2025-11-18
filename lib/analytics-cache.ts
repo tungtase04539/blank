@@ -40,11 +40,15 @@ class AnalyticsCache {
   // Clean up expired entries periodically
   cleanup(): void {
     const now = Date.now();
-    for (const [key, entry] of this.cache.entries()) {
+    const keysToDelete: string[] = [];
+    
+    this.cache.forEach((entry, key) => {
       if (now > entry.timestamp) {
-        this.cache.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    
+    keysToDelete.forEach(key => this.cache.delete(key));
   }
 }
 
