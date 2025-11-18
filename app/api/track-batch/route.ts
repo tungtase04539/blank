@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
     // Process each link's events
     const promises: Promise<any>[] = [];
 
-    for (const { linkId, sessionIds } of eventsByLink.values()) {
+    // Convert Map values to array for ES5 compatibility
+    eventsByLink.forEach(({ linkId, sessionIds }) => {
       // One view increment per link
       promises.push(
         supabase.rpc('increment_daily_views', {
@@ -58,15 +59,15 @@ export async function POST(request: NextRequest) {
       );
 
       // One session update per unique sessionId
-      for (const sessionId of sessionIds) {
+      sessionIds.forEach((sessionId) => {
         promises.push(
           supabase.rpc('update_online_session', {
             p_link_id: linkId,
             p_session_id: sessionId,
           })
         );
-      }
-    }
+      });
+    });
 
     // Execute all in parallel
     const results = await Promise.allSettled(promises);
