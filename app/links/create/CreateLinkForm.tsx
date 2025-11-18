@@ -33,7 +33,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
       const urls = videoUrls.split('\n').map(url => url.trim()).filter(url => url.length > 0);
       
       if (urls.length === 0) {
-        setError('Vui lòng nhập ít nhất 1 video URL');
+        setError('Please enter at least 1 video URL');
         setLoading(false);
         return;
       }
@@ -89,7 +89,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
-          Slug (URL ngắn) - Tự động generate *
+          Slug (Short URL) - Auto-generated *
         </label>
         <div className="flex items-center gap-2">
           <span className="text-gray-500">/</span>
@@ -97,9 +97,13 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
             id="slug"
             type="text"
             value={slug}
-            className="input flex-1 bg-gray-50"
-            readOnly
+            onChange={(e) => setSlug(e.target.value)}
+            className="input flex-1"
+            placeholder="xyz123mp4"
+            required
             disabled={loading}
+            pattern="[a-zA-Z0-9_-]+"
+            title="Only letters, numbers, underscore, and hyphen"
           />
           <button
             type="button"
@@ -107,29 +111,24 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
             className="btn btn-secondary whitespace-nowrap"
             disabled={loading}
           >
-            🔄 Generate
+            🔄 Regenerate
           </button>
         </div>
         <p className="text-sm text-gray-500 mt-1">
-          Format: 5 random characters + "mp4" (Example: {slug})
+          Auto-generated slug ending with "mp4". Last 3 characters are always "mp4"
         </p>
       </div>
 
       <div>
         <label htmlFor="videoUrls" className="block text-sm font-medium text-gray-700 mb-2">
-          Video URLs *
+          Video URL(s) *
         </label>
         <textarea
           id="videoUrls"
           value={videoUrls}
           onChange={(e) => setVideoUrls(e.target.value)}
-          className="input font-mono text-sm"
-          placeholder="https://example.com/video1.webm
-https://example.com/video2.webm
-https://example.com/video3.webm
-
-(Mỗi dòng 1 video URL - Tự động tạo nhiều links)"
-          rows={6}
+          className="input min-h-[120px] font-mono text-sm"
+          placeholder="https://example.com/video1.webm&#10;https://example.com/video2.webm&#10;https://example.com/video3.webm"
           required
           disabled={loading}
         />
@@ -139,68 +138,21 @@ https://example.com/video3.webm
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bottom Buttons</h3>
-        
-        <div className="mb-4">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={useCustomButtons}
-              onChange={(e) => setUseCustomButtons(e.target.checked)}
-              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-              disabled={loading}
-            />
-            <span className="text-sm font-medium text-gray-700">
-              Add buttons (Telegram & Website)
-            </span>
-          </label>
-          <p className="text-xs text-gray-500 mt-1 ml-8">Leave empty to use global settings</p>
-        </div>
-
-        {useCustomButtons && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <div className="text-2xl">ℹ️</div>
             <div>
-              <label htmlFor="telegramUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                📱 Telegram Button URL
-              </label>
-              <input
-                id="telegramUrl"
-                type="url"
-                value={telegramUrl}
-                onChange={(e) => setTelegramUrl(e.target.value)}
-                className="input"
-                placeholder="https://t.me/your_channel"
-                disabled={loading}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="webUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                🌐 Web Button URL
-              </label>
-              <input
-                id="webUrl"
-                type="url"
-                value={webUrl}
-                onChange={(e) => setWebUrl(e.target.value)}
-                className="input"
-                placeholder="https://your-website.com"
-                disabled={loading}
-              />
+              <h3 className="text-sm font-semibold text-blue-900 mb-1">Bottom Buttons</h3>
+              <p className="text-sm text-blue-800">
+                All links use global button settings. Configure Telegram & Website URLs in <strong>Settings → Global Settings</strong>.
+              </p>
             </div>
           </div>
-        )}
-        
-        {!useCustomButtons && (
-          <p className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-            💡 This link will use buttons from <strong>Global Settings</strong>. 
-            Go to <strong>Settings</strong> menu to configure common buttons for all links.
-          </p>
-        )}
+        </div>
       </div>
 
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Cài Đặt Redirect (Tùy chọn)</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Redirect Settings (Optional)</h3>
         
         <div className="mb-4">
           <label className="flex items-center space-x-3 cursor-pointer">
@@ -218,7 +170,7 @@ https://example.com/video3.webm
         {redirectEnabled && (
           <div>
             <label htmlFor="destinationUrl" className="block text-sm font-medium text-gray-700 mb-2">
-              URL đích
+              Destination URL
             </label>
             <input
               id="destinationUrl"
@@ -229,7 +181,7 @@ https://example.com/video3.webm
               placeholder="https://example.com/destination"
               disabled={loading}
             />
-            <p className="text-sm text-gray-500 mt-1">Người xem sẽ được chuyển hướng đến URL này</p>
+            <p className="text-sm text-gray-500 mt-1">Visitors will be redirected to this URL</p>
           </div>
         )}
       </div>
@@ -260,4 +212,3 @@ https://example.com/video3.webm
     </form>
   );
 }
-
