@@ -46,31 +46,31 @@ export async function POST(request: NextRequest) {
     const today = new Date().toISOString().split('T')[0];
 
     // Process each link's events
-    const promises: Promise<any>[] = [];
+    const rpCalls: Array<() => Promise<any>> = [];
 
     // Convert Map values to array for ES5 compatibility
     eventsByLink.forEach(({ linkId, sessionIds }) => {
       // One view increment per link
-      promises.push(
+      rpCalls.push(() =>
         supabase.rpc('increment_daily_views', {
           p_link_id: linkId,
           p_date: today,
-        })
+        }).then(r => r)
       );
 
       // One session update per unique sessionId
       sessionIds.forEach((sessionId) => {
-        promises.push(
+        rpCalls.push(() =>
           supabase.rpc('update_online_session', {
             p_link_id: linkId,
             p_session_id: sessionId,
-          })
+          }).then(r => r)
         );
       });
     });
 
     // Execute all in parallel
-    const results = await Promise.allSettled(promises);
+    const results = await Promise.allSettled(rpCalls.map(fn => fn()));
 
     // Count errors
     const errors = results.filter(r => r.status === 'rejected').length;
