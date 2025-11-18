@@ -101,10 +101,7 @@ export default function DashboardHybrid({
         </div>
       </div>
 
-      {/* Google Analytics Real-time Stats */}
-      <div className="mb-8">
-        <GoogleAnalyticsEmbed />
-      </div>
+      {/* Google Analytics removed from dashboard - tracking still active on links */}
 
       {/* Two Column Layout for Top Links */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
