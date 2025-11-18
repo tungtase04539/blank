@@ -8,39 +8,37 @@ export const dynamic = 'force-dynamic';
 async function getDashboardStats(userId: string) {
   const supabase = await createClient();
   
-  // Get total links
-  const { count: totalLinks } = await supabase
-    .from('links')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId);
-  
-  // Get all links with button clicks
+  // Get link stats from the view (includes total_views and online_count)
   const { data: links } = await supabase
-    .from('links')
-    .select('id, slug, video_url, telegram_clicks, web_clicks, created_at')
+    .from('link_stats')
+    .select('*')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .order('total_views', { ascending: false });
   
-  // Calculate total button clicks
-  const totalTelegramClicks = links?.reduce((sum, link) => sum + (link.telegram_clicks || 0), 0) || 0;
-  const totalWebClicks = links?.reduce((sum, link) => sum + (link.web_clicks || 0), 0) || 0;
-  const totalClicks = totalTelegramClicks + totalWebClicks;
+  // Calculate total views and online count
+  const totalViews = links?.reduce((sum, link) => sum + (link.total_views || 0), 0) || 0;
   
-  // Get top links by total clicks (telegram + web)
-  const topLinks = (links || [])
-    .map(link => ({
-      ...link,
-      total_clicks: (link.telegram_clicks || 0) + (link.web_clicks || 0)
-    }))
-    .sort((a, b) => b.total_clicks - a.total_clicks)
-    .slice(0, 5);
+  // Get total online count using database function
+  const { data: onlineData } = await supabase.rpc('get_total_online_count');
+  const totalOnline = onlineData || 0;
+  
+  // Get last 7 days chart data
+  const { data: chartData } = await supabase
+    .from('last_7_days_stats')
+    .select('*')
+    .order('date', { ascending: true });
+  
+  // Format chart data
+  const formattedChartData = (chartData || []).map(row => ({
+    date: row.date,
+    visits: row.total_views || 0,
+  }));
   
   return {
-    totalLinks: totalLinks || 0,
-    totalClicks,
-    totalTelegramClicks,
-    totalWebClicks,
-    topLinks,
+    links: links || [],
+    totalViews,
+    totalOnline,
+    chartData: formattedChartData,
   };
 }
 
@@ -59,14 +57,12 @@ export default async function DashboardPage() {
         </div>
         
         <DashboardHybrid
-          totalLinks={stats.totalLinks}
-          totalClicks={stats.totalClicks}
-          totalTelegramClicks={stats.totalTelegramClicks}
-          totalWebClicks={stats.totalWebClicks}
-          topLinks={stats.topLinks}
+          initialLinks={stats.links}
+          chartData={stats.chartData}
+          totalViews={stats.totalViews}
+          totalOnline={stats.totalOnline}
         />
       </main>
     </div>
   );
 }
-

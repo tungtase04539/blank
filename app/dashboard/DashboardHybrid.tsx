@@ -1,103 +1,87 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import GoogleAnalyticsEmbed from '@/components/GoogleAnalyticsEmbed';
+import { LinkStats } from '@/lib/types';
+import TrafficChart from './TrafficChart';
 
-interface TopOnlineLink {
-  page: string;
-  activeUsers: number;
+interface DashboardProps {
+  initialLinks: LinkStats[];
+  chartData: { date: string; visits: number }[];
+  totalViews: number;
+  totalOnline: number;
 }
 
-interface DashboardHybridProps {
-  totalLinks: number;
-  totalClicks: number;
-  totalTelegramClicks: number;
-  totalWebClicks: number;
-  topLinks: any[];
-}
+export default function DashboardHybrid({ 
+  initialLinks, 
+  chartData, 
+  totalViews, 
+  totalOnline 
+}: DashboardProps) {
+  const [links, setLinks] = useState<LinkStats[]>(initialLinks);
 
-export default function DashboardHybrid({
-  totalLinks,
-  totalClicks,
-  totalTelegramClicks,
-  totalWebClicks,
-  topLinks,
-}: DashboardHybridProps) {
-  const [topOnlineLinks, setTopOnlineLinks] = useState<TopOnlineLink[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  // Auto-refresh online count every 30 seconds
   useEffect(() => {
-    const fetchTopOnline = async () => {
+    const refreshStats = async () => {
       try {
-        const response = await fetch('/api/analytics');
+        const response = await fetch('/api/dashboard-stats');
         if (response.ok) {
           const data = await response.json();
-          setTopOnlineLinks(data.topOnlineLinks || []);
+          setLinks(data.links);
         }
       } catch (error) {
-        console.error('Failed to fetch top online links:', error);
-      } finally {
-        setLoading(false);
+        console.error('Failed to refresh stats:', error);
       }
     };
 
-    fetchTopOnline();
-    
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchTopOnline, 5 * 60 * 1000);
+    const interval = setInterval(refreshStats, 30 * 1000);
     return () => clearInterval(interval);
   }, []);
 
+  // Sort links by total views
+  const sortedLinks = [...links].sort((a, b) => b.total_views - a.total_views);
+  const topLinks = sortedLinks.slice(0, 10);
+
+  // Sort links by online count
+  const onlineLinks = [...links]
+    .filter(l => l.online_count > 0)
+    .sort((a, b) => b.online_count - a.online_count)
+    .slice(0, 10);
+
   return (
-    <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
+    <div className="space-y-8">
+      {/* Header Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="card bg-gradient-to-br from-blue-500 to-blue-600 text-white">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-blue-100 text-sm font-medium">Total Links</div>
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+            <div className="text-blue-100 text-sm font-medium">📊 Total Views</div>
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
             </div>
           </div>
-          <div className="text-4xl font-bold">{totalLinks}</div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-green-100 text-sm font-medium">Total Button Clicks</div>
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-              </svg>
-            </div>
-          </div>
-          <div className="text-4xl font-bold">{totalClicks.toLocaleString()}</div>
+          <div className="text-4xl font-bold">{totalViews.toLocaleString()}</div>
+          <p className="text-blue-100 text-xs mt-2">All time across all links</p>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
+        <div className="card bg-gradient-to-br from-green-500 to-emerald-600 text-white">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-blue-100 text-sm font-medium">📱 Telegram</div>
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+            <div className="text-green-100 text-sm font-medium flex items-center space-x-2">
+              <span>👥 Active Users</span>
+              <span className="flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+              </span>
+            </div>
+            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
           </div>
-          <div className="text-4xl font-bold">{totalTelegramClicks.toLocaleString()}</div>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-400 to-green-500 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-transform">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-green-100 text-sm font-medium">🌐 Web</div>
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-              </svg>
-            </div>
-          </div>
-          <div className="text-4xl font-bold">{totalWebClicks.toLocaleString()}</div>
+          <div className="text-4xl font-bold">{totalOnline.toLocaleString()}</div>
+          <p className="text-green-100 text-xs mt-2">Currently viewing your links</p>
         </div>
       </div>
 
@@ -105,112 +89,116 @@ export default function DashboardHybrid({
 
       {/* Two Column Layout for Top Links */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Top Links by Button Clicks */}
+        {/* Top Links by Views */}
         <div className="card">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
-            🔥 Top Links (Button Clicks)
-          </h2>
-          {topLinks.length > 0 ? (
-            <div className="space-y-4">
-              {topLinks.map((link, index) => (
-                <div 
+          <h2 className="text-xl font-bold text-gray-900 mb-6">🔥 Top Links by Views</h2>
+          <div className="space-y-3">
+            {topLinks.length > 0 ? (
+              topLinks.map((link, index) => (
+                <div
                   key={link.id}
-                  className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg hover:shadow-md transition-all"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg hover:shadow-md transition-shadow"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full font-bold text-sm">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full text-sm font-bold">
                       {index + 1}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">/{link.slug}</p>
-                      <p className="text-xs text-gray-500 truncate max-w-[200px]">
-                        {link.video_url}
-                      </p>
+                      <a 
+                        href={`/${link.slug}`} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-gray-900 hover:text-blue-600"
+                      >
+                        {link.slug}
+                      </a>
+                      {link.online_count > 0 && (
+                        <div className="flex items-center space-x-1 text-xs text-green-600 mt-1">
+                          <span className="flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                          </span>
+                          <span>{link.online_count} online</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900">{link.total_clicks}</p>
-                    <p className="text-xs text-gray-600">clicks</p>
+                    <div className="text-lg font-bold text-gray-900">
+                      {link.total_views.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-gray-500">views</div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-8">No links yet</p>
-          )}
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📊</div>
+                <p className="text-gray-500">No views yet</p>
+                <p className="text-sm text-gray-400 mt-2">Create and share your first link!</p>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Top 10 Online Links (API) */}
+        {/* Top Links by Online Users */}
         <div className="card">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              👥 Top 10 Online Now
-            </h2>
-            <span className="flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-          </div>
-          {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg animate-pulse">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                    <div className="h-4 bg-gray-300 rounded w-32"></div>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">🌟 Currently Active Links</h2>
+          <div className="space-y-3">
+            {onlineLinks.length > 0 ? (
+              onlineLinks.map((link, index) => (
+                <div
+                  key={link.id}
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-full text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <a 
+                        href={`/${link.slug}`} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-gray-900 hover:text-green-600"
+                      >
+                        {link.slug}
+                      </a>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {link.total_views.toLocaleString()} total views
+                      </div>
+                    </div>
                   </div>
-                  <div className="h-8 bg-gray-300 rounded w-12"></div>
+                  <div className="text-right">
+                    <div className="flex items-center space-x-2">
+                      <span className="flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                      <div className="text-lg font-bold text-green-600">
+                        {link.online_count}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500">online now</div>
+                  </div>
                 </div>
-              ))}
-            </div>
-          ) : topOnlineLinks && topOnlineLinks.length > 0 ? (
-            <div className="space-y-4">
-              {topOnlineLinks.map((link, index) => {
-                const slug = link.page.replace('/', '');
-                
-                return (
-                  <div 
-                    key={link.page}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg hover:shadow-md transition-all"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-full font-bold text-sm">
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">/{slug}</p>
-                        <p className="text-xs text-green-600 flex items-center">
-                          <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
-                          Live now
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-green-600">{link.activeUsers}</p>
-                      <p className="text-xs text-gray-600">online</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">😴</div>
-              <p className="text-gray-500">No one online right now</p>
-              <p className="text-sm text-gray-400 mt-2">Come back later!</p>
-            </div>
-          )}
-          
-          {!loading && topOnlineLinks && topOnlineLinks.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-xs text-gray-500 text-center">
-                🔄 Updates every 5 minutes • Via Google Analytics API
-              </p>
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">😴</div>
+                <p className="text-gray-500">No active users right now</p>
+                <p className="text-sm text-gray-400 mt-2">Stats will appear when visitors access your links</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </>
+
+      {/* Traffic Chart */}
+      <div className="card">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">📈 Last 7 Days Traffic</h2>
+        <TrafficChart data={chartData} />
+      </div>
+    </div>
   );
 }
-

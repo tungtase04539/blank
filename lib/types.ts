@@ -30,17 +30,26 @@ export interface Script {
   updated_at: string;
 }
 
-export interface LinkVisit {
-  id: string;
+export interface DailyStatsDB {
+  id: number;
   link_id: string;
-  visited_at: string;
-  ip_address: string | null;
-  user_agent: string | null;
-  referer: string | null;
+  date: string;
+  view_count: number;
+  unique_sessions: number;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface LinkWithVisitCount extends Link {
-  visit_count: number;
+export interface OnlineSession {
+  id: string;
+  link_id: string;
+  session_id: string;
+  last_active: string;
+  created_at: string;
+}
+
+export interface LinkStats extends Link {
+  total_views: number;
   online_count: number;
 }
 

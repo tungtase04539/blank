@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import NextScript from 'next/script';
 import { Link, Script, GlobalSettings } from '@/lib/types';
 
@@ -11,10 +11,46 @@ interface LinkPageProps {
   userId: string;
 }
 
+// Generate or retrieve session ID
+function getSessionId(): string {
+  if (typeof window === 'undefined') return '';
+  
+  let sessionId = sessionStorage.getItem('trackingSessionId');
+  if (!sessionId) {
+    sessionId = `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionStorage.setItem('trackingSessionId', sessionId);
+  }
+  return sessionId;
+}
+
 export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
+  const [sessionId] = useState<string>('');
+
   useEffect(() => {
-    // Visit tracking removed - using Google Analytics instead
-    
+    // Get or create session ID
+    const sid = getSessionId();
+
+    // Track pageview and online session
+    const trackView = async () => {
+      try {
+        await fetch('/api/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            linkId: link.id,
+            sessionId: sid,
+          }),
+        });
+      } catch (error) {
+        console.error('Track view error:', error);
+      }
+    };
+
+    trackView();
+
+    // Keep session alive (ping every 5 minutes)
+    const keepAliveInterval = setInterval(trackView, 5 * 60 * 1000);
+
     // Handle random redirect if enabled
     if (link.redirect_enabled) {
       const checkAndRedirect = async () => {
@@ -39,19 +75,11 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
       
       checkAndRedirect();
     }
-  }, [link, userId]);
 
-  const handleButtonClick = async (buttonType: 'telegram' | 'web') => {
-    try {
-      await fetch('/api/track-button-click', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ linkId: link.id, buttonType }),
-      });
-    } catch (error) {
-      console.error('Track button click error:', error);
-    }
-  };
+    return () => {
+      clearInterval(keepAliveInterval);
+    };
+  }, [link, userId]);
 
   const headScripts = scripts.filter(s => s.location === 'head');
   const bodyScripts = scripts.filter(s => s.location === 'body');
@@ -98,7 +126,6 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
                   href={telegramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => handleButtonClick('telegram')}
                   className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
                 >
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -113,7 +140,6 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
                   href={webUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => handleButtonClick('web')}
                   className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,4 +165,3 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     </>
   );
 }
-

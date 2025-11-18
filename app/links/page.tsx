@@ -9,24 +9,22 @@ export const dynamic = 'force-dynamic';
 async function getLinks(userId: string, sortBy: string = 'created') {
   const supabase = await createClient();
   
+  // Use link_stats view which includes total_views and online_count
   const { data: links } = await supabase
-    .from('links')
+    .from('link_stats')
     .select('*')
     .eq('user_id', userId);
   
-  // Add total clicks (telegram + web) to each link
   const linksWithCounts = (links || []).map(link => ({
     ...link,
-    visit_count: (link.telegram_clicks || 0) + (link.web_clicks || 0),
-    online_count: 0, // Removed online tracking - using Google Analytics
+    visit_count: link.total_views || 0,
   }));
   
   // Sort links
   if (sortBy === 'clicks') {
     linksWithCounts.sort((a, b) => b.visit_count - a.visit_count);
   } else if (sortBy === 'online') {
-    // Online sort removed - fallback to created
-    linksWithCounts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    linksWithCounts.sort((a, b) => b.online_count - a.online_count);
   } else {
     linksWithCounts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
@@ -64,4 +62,3 @@ export default async function LinksPage({
     </div>
   );
 }
-
