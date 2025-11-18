@@ -15,9 +15,6 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
   const [videoUrls, setVideoUrls] = useState('');
   const [destinationUrl, setDestinationUrl] = useState('');
   const [redirectEnabled, setRedirectEnabled] = useState(false);
-  const [telegramUrl, setTelegramUrl] = useState('');
-  const [webUrl, setWebUrl] = useState('');
-  const [useCustomButtons, setUseCustomButtons] = useState(true); // Default checked
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -48,8 +45,8 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           videoUrls: urls,
           destinationUrl: destinationUrl || null,
           redirectEnabled,
-          telegramUrl: useCustomButtons ? (telegramUrl || null) : null,
-          webUrl: useCustomButtons ? (webUrl || null) : null,
+          telegramUrl: null,
+          webUrl: null,
         });
 
         if (result.success && result.slugs) {
@@ -66,8 +63,8 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           videoUrl: urls[0],
           destinationUrl: destinationUrl || null,
           redirectEnabled,
-          telegramUrl: useCustomButtons ? (telegramUrl || null) : null,
-          webUrl: useCustomButtons ? (webUrl || null) : null,
+          telegramUrl: null,
+          webUrl: null,
         });
 
         if (result.success) {
