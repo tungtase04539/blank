@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import NextScript from 'next/script';
 import { Link, Script, GlobalSettings } from '@/lib/types';
 
 interface LinkPageProps {
@@ -61,14 +62,15 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
 
   return (
     <>
-      <head>
-        {headScripts.map((script) => (
-          <script
-            key={script.id}
-            dangerouslySetInnerHTML={{ __html: script.content }}
-          />
-        ))}
-      </head>
+      {/* Inject head scripts using Next.js Script component */}
+      {headScripts.map((script) => (
+        <NextScript
+          key={script.id}
+          id={`head-script-${script.id}`}
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: script.content }}
+        />
+      ))}
       
       <div className="min-h-screen bg-black flex flex-col">
         {/* Video Container */}
@@ -126,8 +128,10 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
         
         {/* Body Scripts */}
         {bodyScripts.map((script) => (
-          <script
+          <NextScript
             key={script.id}
+            id={`body-script-${script.id}`}
+            strategy="afterInteractive"
             dangerouslySetInnerHTML={{ __html: script.content }}
           />
         ))}
