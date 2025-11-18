@@ -64,7 +64,6 @@ export default async function DashboardPage() {
           totalTelegramClicks={stats.totalTelegramClicks}
           totalWebClicks={stats.totalWebClicks}
           topLinks={stats.topLinks}
-          gaViewId={process.env.NEXT_PUBLIC_GA_VIEW_ID}
         />
       </main>
     </div>

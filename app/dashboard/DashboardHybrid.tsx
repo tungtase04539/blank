@@ -14,7 +14,6 @@ interface DashboardHybridProps {
   totalTelegramClicks: number;
   totalWebClicks: number;
   topLinks: any[];
-  gaViewId?: string;
 }
 
 export default function DashboardHybrid({
@@ -23,7 +22,6 @@ export default function DashboardHybrid({
   totalTelegramClicks,
   totalWebClicks,
   topLinks,
-  gaViewId,
 }: DashboardHybridProps) {
   const [topOnlineLinks, setTopOnlineLinks] = useState<TopOnlineLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,9 +101,9 @@ export default function DashboardHybrid({
         </div>
       </div>
 
-      {/* Google Analytics Embed - Real-time Dashboard */}
+      {/* Google Analytics Real-time Stats */}
       <div className="mb-8">
-        <GoogleAnalyticsEmbed viewId={gaViewId} />
+        <GoogleAnalyticsEmbed />
       </div>
 
       {/* Two Column Layout for Top Links */}
