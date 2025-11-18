@@ -33,14 +33,18 @@ export async function POST(request: NextRequest) {
       // Fallback: manual increment if RPC doesn't exist
       const { data: link } = await supabase
         .from('links')
-        .select(column)
+        .select('telegram_clicks, web_clicks')
         .eq('id', linkId)
         .single();
 
       if (link) {
+        const currentValue = buttonType === 'telegram' 
+          ? (link.telegram_clicks || 0) 
+          : (link.web_clicks || 0);
+        
         await supabase
           .from('links')
-          .update({ [column]: (link[column] || 0) + 1 })
+          .update({ [column]: currentValue + 1 })
           .eq('id', linkId);
       }
     }
