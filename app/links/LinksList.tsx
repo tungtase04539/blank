@@ -84,7 +84,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
     );
   }
 
-  const totalClicks = links.reduce((sum, link) => sum + link.visit_count, 0);
+  const totalClicks = links.reduce((sum, link) => sum + link.total_views, 0);
   const totalOnline = links.reduce((sum, link) => sum + link.online_count, 0);
 
   const closeModal = () => {
@@ -352,8 +352,8 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                 <div className="bg-white rounded-lg p-3 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-gray-500 mb-1">Total Clicks</div>
-                      <div className="text-2xl font-bold text-gray-900">{link.visit_count.toLocaleString()}</div>
+                      <div className="text-xs text-gray-500 mb-1">Total Views</div>
+                      <div className="text-2xl font-bold text-gray-900">{link.total_views.toLocaleString()}</div>
                     </div>
                     <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                       <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

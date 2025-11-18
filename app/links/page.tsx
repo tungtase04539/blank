@@ -15,14 +15,11 @@ async function getLinks(userId: string, sortBy: string = 'created') {
     .select('*')
     .eq('user_id', userId);
   
-  const linksWithCounts = (links || []).map(link => ({
-    ...link,
-    visit_count: link.total_views || 0,
-  }));
+  const linksWithCounts = links || [];
   
   // Sort links
   if (sortBy === 'clicks') {
-    linksWithCounts.sort((a, b) => b.visit_count - a.visit_count);
+    linksWithCounts.sort((a, b) => b.total_views - a.total_views);
   } else if (sortBy === 'online') {
     linksWithCounts.sort((a, b) => b.online_count - a.online_count);
   } else {
