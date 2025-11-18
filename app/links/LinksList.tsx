@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LinkWithVisitCount } from '@/lib/types';
+import { LinkStats } from '@/lib/types';
 import { deleteLinkAction, toggleRedirectAction } from './actions';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 interface LinksListProps {
-  links: LinkWithVisitCount[];
+  links: LinkStats[];
   appUrl: string;
   currentSort: string;
 }
@@ -18,7 +18,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
   const [deleting, setDeleting] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showNewLinksModal, setShowNewLinksModal] = useState(false);
-  const [newLinks, setNewLinks] = useState<LinkWithVisitCount[]>([]);
+  const [newLinks, setNewLinks] = useState<LinkStats[]>([]);
 
   // Check for newly created links
   useEffect(() => {
