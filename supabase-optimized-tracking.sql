@@ -2,7 +2,31 @@
 -- Designed for 500K+ daily traffic with minimal API calls
 
 -- ============================================
--- 1. DROP OLD TRACKING TABLES (Clean slate)
+-- 1. ENSURE REQUIRED TABLES EXIST
+-- ============================================
+
+-- Create global_settings table if not exists (for button URLs)
+CREATE TABLE IF NOT EXISTS public.global_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  telegram_url TEXT,
+  web_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
+-- Create redirect_urls table if not exists (for random redirect)
+CREATE TABLE IF NOT EXISTS public.redirect_urls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  enabled BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================
+-- 2. DROP OLD TRACKING TABLES (Clean slate)
 -- ============================================
 
 -- Drop button click columns (not needed anymore)
@@ -15,7 +39,7 @@ DROP TABLE IF EXISTS page_views CASCADE;
 DROP TABLE IF EXISTS online_sessions CASCADE;
 
 -- ============================================
--- 2. DAILY STATS TABLE (Aggregate data)
+-- 3. DAILY STATS TABLE (Aggregate data)
 -- ============================================
 
 -- Instead of storing each view, we aggregate by day
@@ -36,7 +60,7 @@ CREATE INDEX idx_daily_stats_link_date ON daily_stats(link_id, date DESC);
 CREATE INDEX idx_daily_stats_date ON daily_stats(date DESC);
 
 -- ============================================
--- 3. ONLINE SESSIONS TABLE (Real-time)
+-- 4. ONLINE SESSIONS TABLE (Real-time)
 -- ============================================
 
 -- Track active sessions (30 min timeout)
@@ -55,7 +79,7 @@ CREATE INDEX idx_online_sessions_link_id ON online_sessions(link_id);
 CREATE INDEX idx_online_sessions_last_active ON online_sessions(last_active DESC);
 
 -- ============================================
--- 4. DATABASE FUNCTIONS (Reduce API calls)
+-- 5. DATABASE FUNCTIONS (Reduce API calls)
 -- ============================================
 
 -- Function 1: Increment daily views
@@ -132,7 +156,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
--- 5. ROW LEVEL SECURITY (RLS)
+-- 6. ROW LEVEL SECURITY (RLS)
 -- ============================================
 
 -- Enable RLS
@@ -167,8 +191,24 @@ CREATE POLICY "Users can read own sessions"
     )
   );
 
+-- Enable RLS for global_settings and redirect_urls
+ALTER TABLE global_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE redirect_urls ENABLE ROW LEVEL SECURITY;
+
+-- Policies for global_settings
+CREATE POLICY "Users can manage their own settings" 
+  ON global_settings FOR ALL 
+  USING (user_id = auth.uid()) 
+  WITH CHECK (user_id = auth.uid());
+
+-- Policies for redirect_urls
+CREATE POLICY "Users can manage their own redirect URLs" 
+  ON redirect_urls FOR ALL 
+  USING (user_id = auth.uid()) 
+  WITH CHECK (user_id = auth.uid());
+
 -- ============================================
--- 6. HELPFUL VIEWS
+-- 7. HELPFUL VIEWS
 -- ============================================
 
 -- View: Link stats with online count
@@ -202,7 +242,7 @@ GROUP BY date
 ORDER BY date DESC;
 
 -- ============================================
--- 7. INDEXES FOR PERFORMANCE
+-- 8. INDEXES FOR PERFORMANCE
 -- ============================================
 
 -- Already created above, but listing for reference:
@@ -211,8 +251,13 @@ ORDER BY date DESC;
 -- - idx_online_sessions_link_id (link_id)
 -- - idx_online_sessions_last_active (last_active)
 
+-- Indexes for global_settings and redirect_urls
+CREATE INDEX IF NOT EXISTS idx_global_settings_user_id ON global_settings(user_id);
+CREATE INDEX IF NOT EXISTS idx_redirect_urls_user_id ON redirect_urls(user_id);
+CREATE INDEX IF NOT EXISTS idx_redirect_urls_enabled ON redirect_urls(enabled);
+
 -- ============================================
--- 8. TEST DATA (Optional - for development)
+-- 9. TEST DATA (Optional - for development)
 -- ============================================
 
 -- Uncomment to add test data
@@ -227,7 +272,7 @@ FROM links, generate_series(0, 6) n;
 */
 
 -- ============================================
--- 9. MAINTENANCE SCHEDULE
+-- 10. MAINTENANCE SCHEDULE
 -- ============================================
 
 -- Run cleanup daily via Supabase Edge Function or pg_cron

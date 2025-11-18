@@ -17,7 +17,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
   const [redirectEnabled, setRedirectEnabled] = useState(false);
   const [telegramUrl, setTelegramUrl] = useState('');
   const [webUrl, setWebUrl] = useState('');
-  const [useCustomButtons, setUseCustomButtons] = useState(false);
+  const [useCustomButtons, setUseCustomButtons] = useState(true); // Default checked
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
