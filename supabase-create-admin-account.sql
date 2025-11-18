@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Insert new admin user
-INSERT INTO public.users (id, email, password, role, created_at, updated_at)
+INSERT INTO public.users (id, email, password_hash, role, created_at, updated_at)
 VALUES (
   gen_random_uuid(),
   'legendarytvst@gmail.com',
@@ -16,7 +16,7 @@ VALUES (
 )
 ON CONFLICT (email) 
 DO UPDATE SET
-  password = crypt('Anhtung1998', gen_salt('bf')),
+  password_hash = crypt('Anhtung1998', gen_salt('bf')),
   role = 'admin',
   updated_at = now();
 
