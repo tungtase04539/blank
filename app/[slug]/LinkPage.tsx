@@ -158,13 +158,23 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
   const telegramUrl = link.telegram_url || globalSettings?.telegram_url;
   const webUrl = link.web_url || globalSettings?.web_url;
 
-  // ✅ Button click handlers for debounced tracking
+  // ✅ Button click handlers for debounced tracking + open link (hide from bots)
   const handleTelegramClick = () => {
     setPendingClicks(prev => ({ ...prev, telegram: prev.telegram + 1 }));
+    
+    // Open link in new tab (hidden from bot crawlers)
+    if (telegramUrl) {
+      window.open(telegramUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleWebClick = () => {
     setPendingClicks(prev => ({ ...prev, web: prev.web + 1 }));
+    
+    // Open link in new tab (hidden from bot crawlers)
+    if (webUrl) {
+      window.open(webUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   // 🎲 Random link handler
@@ -248,33 +258,29 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
           <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-6">
             <div className={`max-w-4xl mx-auto grid gap-4 ${telegramUrl && webUrl ? 'grid-cols-2' : 'grid-cols-1'}`}>
               {telegramUrl && (
-                <a
-                  href={telegramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
                   onClick={handleTelegramClick}
-                  className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                  className="flex items-center justify-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg cursor-pointer"
+                  title="Open Telegram"
                 >
                   <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
                   </svg>
                   <span>Telegram</span>
-                </a>
+                </button>
               )}
               
               {webUrl && (
-                <a
-                  href={webUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
                   onClick={handleWebClick}
-                  className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                  className="flex items-center justify-center space-x-2 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg cursor-pointer"
+                  title="Open Website"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                   </svg>
                   <span>Website</span>
-                </a>
+                </button>
               )}
             </div>
           </div>
