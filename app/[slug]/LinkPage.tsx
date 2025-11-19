@@ -202,17 +202,17 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
       ))}
       
       <div className="min-h-screen bg-black flex flex-col relative">
-        {/* 🎲 Random Link Button - Fixed Top Right */}
+        {/* 🎲 Random Video Button - Fixed Top Right */}
         <button
           onClick={handleRandomLink}
           disabled={loadingRandom}
-          className={`fixed top-6 right-6 z-50 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-3 px-5 rounded-full transition-all transform hover:scale-110 shadow-2xl ${
+          className={`fixed top-6 right-6 z-50 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-110 shadow-2xl ${
             loadingRandom ? 'opacity-50 cursor-not-allowed' : 'animate-pulse'
           }`}
-          title="Random video"
+          title="Xem video ngẫu nhiên"
         >
           <svg 
-            className={`w-6 h-6 ${loadingRandom ? 'animate-spin' : ''}`} 
+            className={`w-5 h-5 ${loadingRandom ? 'animate-spin' : ''}`} 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -224,7 +224,7 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
             />
           </svg>
-          <span className="hidden sm:inline">Random</span>
+          <span className="text-sm">Random Video</span>
         </button>
 
         {/* Video Container */}
