@@ -16,39 +16,37 @@ async function getMonthlyStats(userId: string) {
   
   const linkIds = links?.map(l => l.id) || [];
   
-  // Get current month visits for each link
+  // Get current month date range
   const now = new Date();
-  const monthStart = startOfMonth(now).toISOString();
-  const monthEnd = endOfMonth(now).toISOString();
+  const monthStart = startOfMonth(now);
+  const monthEnd = endOfMonth(now);
   
+  // Query from daily_stats table (the correct table!)
   const statsPromises = (links || []).map(async (link) => {
-    const { count } = await supabase
-      .from('link_visits')
-      .select('*', { count: 'exact', head: true })
+    const { data: dailyData } = await supabase
+      .from('daily_stats')
+      .select('view_count')
       .eq('link_id', link.id)
-      .gte('visited_at', monthStart)
-      .lte('visited_at', monthEnd);
+      .gte('date', monthStart.toISOString().split('T')[0])
+      .lte('date', monthEnd.toISOString().split('T')[0]);
+    
+    const totalViews = dailyData?.reduce((sum, day) => sum + (day.view_count || 0), 0) || 0;
     
     return {
       slug: link.slug,
-      visits: count || 0,
+      visits: totalViews,
     };
   });
   
   const linkStats = await Promise.all(statsPromises);
   linkStats.sort((a, b) => b.visits - a.visits);
   
-  // Get total visits this month
-  const { count: totalVisits } = await supabase
-    .from('link_visits')
-    .select('*', { count: 'exact', head: true })
-    .in('link_id', linkIds.length > 0 ? linkIds : [''])
-    .gte('visited_at', monthStart)
-    .lte('visited_at', monthEnd);
+  // Calculate total visits from all links
+  const totalVisits = linkStats.reduce((sum, link) => sum + link.visits, 0);
   
   return {
     linkStats,
-    totalVisits: totalVisits || 0,
+    totalVisits,
     month: format(now, 'MM/yyyy'),
   };
 }
