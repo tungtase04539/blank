@@ -42,6 +42,7 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     telegram: number;
     web: number;
   }>({ telegram: 0, web: 0 });
+  const [loadingRandom, setLoadingRandom] = useState(false);
 
   // ✅ OPTIMIZED: Keep-alive with Page Visibility API (only ping when tab is active)
   useEffect(() => {
@@ -166,6 +167,28 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     setPendingClicks(prev => ({ ...prev, web: prev.web + 1 }));
   };
 
+  // 🎲 Random link handler
+  const handleRandomLink = async () => {
+    if (loadingRandom) return;
+    
+    setLoadingRandom(true);
+    try {
+      const response = await fetch(`/api/random-link?current=${link.slug}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.slug) {
+          window.location.href = `/${data.slug}`;
+        }
+      } else {
+        console.log('No other links available');
+      }
+    } catch (error) {
+      console.error('Random link error:', error);
+    } finally {
+      setLoadingRandom(false);
+    }
+  };
+
   return (
     <>
       {/* Inject head scripts using Next.js Script component */}
@@ -178,7 +201,32 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
         />
       ))}
       
-      <div className="min-h-screen bg-black flex flex-col">
+      <div className="min-h-screen bg-black flex flex-col relative">
+        {/* 🎲 Random Link Button - Fixed Top Right */}
+        <button
+          onClick={handleRandomLink}
+          disabled={loadingRandom}
+          className={`fixed top-6 right-6 z-50 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-3 px-5 rounded-full transition-all transform hover:scale-110 shadow-2xl ${
+            loadingRandom ? 'opacity-50 cursor-not-allowed' : 'animate-pulse'
+          }`}
+          title="Random video"
+        >
+          <svg 
+            className={`w-6 h-6 ${loadingRandom ? 'animate-spin' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+            />
+          </svg>
+          <span className="hidden sm:inline">Random</span>
+        </button>
+
         {/* Video Container */}
         <div className="flex-1 flex items-center justify-center p-4">
           <video 
