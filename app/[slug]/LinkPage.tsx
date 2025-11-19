@@ -39,8 +39,6 @@ function getSessionId(): string {
 
 export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
   const [loadingRandom, setLoadingRandom] = useState(false);
-  const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
-  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
 
   // ✅ OPTIMIZED: Keep-alive with Page Visibility API (only ping when tab is active)
   useEffect(() => {
@@ -166,44 +164,26 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     }
   };
 
-  // 🎬 Video ended handler - Auto redirect
+  // 🎬 Video ended handler - Auto redirect (INSTANT, no countdown)
   const handleVideoEnded = async () => {
-    console.log('Video ended, checking for redirect URL...');
+    console.log('Video ended, fetching redirect URL...');
     
     try {
       const response = await fetch(`/api/redirect-urls?userId=${userId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.url) {
-          console.log('Redirect URL found:', data.url);
-          setRedirectUrl(data.url);
-          setRedirectCountdown(5); // Start 5 second countdown
+          console.log('Redirecting to:', data.url);
+          // ✅ INSTANT redirect - no countdown!
+          window.location.href = data.url;
         } else {
-          console.log('No redirect URL configured');
+          console.log('No redirect URL configured for this user');
         }
       }
     } catch (error) {
       console.error('Failed to fetch redirect URL:', error);
     }
   };
-
-  // Countdown timer for redirect
-  useEffect(() => {
-    if (redirectCountdown === null || redirectCountdown < 0) return;
-    
-    if (redirectCountdown === 0 && redirectUrl) {
-      // Redirect now!
-      window.location.href = redirectUrl;
-      return;
-    }
-    
-    // Countdown timer
-    const timer = setTimeout(() => {
-      setRedirectCountdown(prev => prev !== null ? prev - 1 : null);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [redirectCountdown, redirectUrl]);
 
   return (
     <>
@@ -259,45 +239,6 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
             Your browser does not support the video tag.
           </video>
         </div>
-
-        {/* 🎬 Redirect Countdown Modal */}
-        {redirectCountdown !== null && redirectUrl && (
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-2xl p-8 max-w-md w-full text-white shadow-2xl transform animate-bounce-in">
-              <div className="text-center">
-                {/* Icon */}
-                <div className="mb-6">
-                  <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center">
-                    <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Title */}
-                <h3 className="text-2xl font-bold mb-2">Video đã kết thúc</h3>
-                <p className="text-white/80 mb-6">Đang chuyển hướng đến trang tiếp theo...</p>
-
-                {/* Countdown */}
-                <div className="mb-6">
-                  <div className="text-7xl font-bold mb-2">{redirectCountdown}</div>
-                  <div className="text-sm text-white/70">giây</div>
-                </div>
-
-                {/* Cancel button */}
-                <button
-                  onClick={() => {
-                    setRedirectCountdown(null);
-                    setRedirectUrl(null);
-                  }}
-                  className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl font-semibold transition-all transform hover:scale-105"
-                >
-                  Hủy chuyển hướng
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Fixed Bottom Buttons */}
         {(telegramUrl || webUrl) && (
