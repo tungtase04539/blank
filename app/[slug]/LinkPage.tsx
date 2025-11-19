@@ -38,10 +38,6 @@ function getSessionId(): string {
 }
 
 export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
-  const [pendingClicks, setPendingClicks] = useState<{
-    telegram: number;
-    web: number;
-  }>({ telegram: 0, web: 0 });
   const [loadingRandom, setLoadingRandom] = useState(false);
 
   // ✅ OPTIMIZED: Keep-alive with Page Visibility API (only ping when tab is active)
@@ -124,33 +120,6 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     };
   }, [link.id, userId]);
 
-  // ✅ OPTIMIZED: Debounced button click tracking (saves 40% button requests)
-  useEffect(() => {
-    if (pendingClicks.telegram === 0 && pendingClicks.web === 0) return;
-    
-    // Flush pending clicks after 1.5s (user has already left to new tab)
-    const timer = setTimeout(async () => {
-      const clicks = { ...pendingClicks };
-      setPendingClicks({ telegram: 0, web: 0 });
-      
-      try {
-        await fetch('/api/track-button-click', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            linkId: link.id,
-            telegramClicks: clicks.telegram,
-            webClicks: clicks.web,
-          }),
-        });
-      } catch (error) {
-        console.error('Track click error:', error);
-      }
-    }, 1500);
-    
-    return () => clearTimeout(timer);
-  }, [pendingClicks, link.id]);
-
   const headScripts = scripts.filter(s => s.location === 'head');
   const bodyScripts = scripts.filter(s => s.location === 'body');
   
@@ -158,10 +127,8 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
   const telegramUrl = link.telegram_url || globalSettings?.telegram_url;
   const webUrl = link.web_url || globalSettings?.web_url;
 
-  // ✅ Button click handlers for debounced tracking + open link (hide from bots)
+  // ✅ Button click handlers to open link (hide from bots, no tracking)
   const handleTelegramClick = () => {
-    setPendingClicks(prev => ({ ...prev, telegram: prev.telegram + 1 }));
-    
     // Open link in new tab (hidden from bot crawlers)
     if (telegramUrl) {
       window.open(telegramUrl, '_blank', 'noopener,noreferrer');
@@ -169,8 +136,6 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
   };
 
   const handleWebClick = () => {
-    setPendingClicks(prev => ({ ...prev, web: prev.web + 1 }));
-    
     // Open link in new tab (hidden from bot crawlers)
     if (webUrl) {
       window.open(webUrl, '_blank', 'noopener,noreferrer');
