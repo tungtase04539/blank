@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 export const dynamic = 'force-dynamic';
 
 /**
- * ✅ AGGRESSIVE BOT DETECTION (Blocks 90%+ of bot traffic)
+ * ✅ BOT DETECTION WITH FACEBOOK BOTS BLOCKED
+ * Real users from Facebook ads will have normal browser user-agents
  */
 function isBot(userAgent: string): boolean {
   const botPatterns = [
@@ -12,8 +13,17 @@ function isBot(userAgent: string): boolean {
     'bot', 'crawler', 'spider', 'scraper',
     // Search engines
     'googlebot', 'bingbot', 'yahoo', 'duckduckbot', 'baiduspider', 'yandex',
-    // Social media
-    'facebookexternalhit', 'twitterbot', 'linkedinbot', 'slackbot', 'discordbot',
+    // Facebook & Social media bots (NOT real users!)
+    'facebookexternalhit',  // Facebook link preview crawler
+    'facebookcatalog',       // Facebook catalog crawler
+    'facebot',               // Facebook's web crawler
+    'facebook',              // Generic Facebook bot (be careful, check if needed)
+    'twitterbot', 
+    'linkedinbot', 
+    'slackbot', 
+    'discordbot',
+    'whatsapp',              // WhatsApp link preview
+    'telegrambot',           // Telegram bot
     // Analytics & monitors
     'semrush', 'ahrefs', 'moz', 'majestic', 'screenshot', 'pingdom', 'uptimerobot',
     // Other bots
@@ -31,19 +41,16 @@ function isBot(userAgent: string): boolean {
  */
 export async function POST(request: NextRequest) {
   try {
-    // ⚠️ BOT DETECTION TEMPORARILY DISABLED FOR DEBUGGING
-    // Re-enable after confirming tracking works
+    // ✅ BOT DETECTION ENABLED - Blocking Facebook bots and others
     const userAgent = request.headers.get('user-agent') || '';
-    console.log('📊 Tracking request - User-Agent:', userAgent);
     
-    // Commented out bot detection for testing
-    // if (!userAgent || isBot(userAgent)) {
-    //   return NextResponse.json({ success: true, blocked: 'bot' }, { status: 200 });
-    // }
+    // Block if no user-agent or is a bot
+    if (!userAgent || isBot(userAgent)) {
+      console.log('🚫 Bot blocked:', userAgent);
+      return NextResponse.json({ success: true, blocked: 'bot' }, { status: 200 });
+    }
 
     const { linkId } = await request.json();
-
-    console.log('🔵 Tracking linkId:', linkId);
 
     if (!linkId) {
       return NextResponse.json(
@@ -61,17 +68,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (viewError) {
-      console.error('❌ Track view error:', viewError);
+      console.error('Track view error:', viewError);
       return NextResponse.json({ 
         success: false, 
         error: viewError.message 
       }, { status: 500 });
     }
 
-    console.log('✅ Track view success for linkId:', linkId);
-    return NextResponse.json({ success: true, tracked: true });
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('❌ Track error:', error);
+    console.error('Track error:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
