@@ -31,13 +31,19 @@ function isBot(userAgent: string): boolean {
  */
 export async function POST(request: NextRequest) {
   try {
-    // ✅ OPTIMIZATION: Block bots immediately (saves CPU & database queries)
+    // ⚠️ BOT DETECTION TEMPORARILY DISABLED FOR DEBUGGING
+    // Re-enable after confirming tracking works
     const userAgent = request.headers.get('user-agent') || '';
-    if (!userAgent || isBot(userAgent)) {
-      return NextResponse.json({ success: true, blocked: 'bot' }, { status: 200 });
-    }
+    console.log('📊 Tracking request - User-Agent:', userAgent);
+    
+    // Commented out bot detection for testing
+    // if (!userAgent || isBot(userAgent)) {
+    //   return NextResponse.json({ success: true, blocked: 'bot' }, { status: 200 });
+    // }
 
     const { linkId } = await request.json();
+
+    console.log('🔵 Tracking linkId:', linkId);
 
     if (!linkId) {
       return NextResponse.json(
@@ -55,12 +61,17 @@ export async function POST(request: NextRequest) {
     });
 
     if (viewError) {
-      console.error('Track view error:', viewError);
+      console.error('❌ Track view error:', viewError);
+      return NextResponse.json({ 
+        success: false, 
+        error: viewError.message 
+      }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true });
+    console.log('✅ Track view success for linkId:', linkId);
+    return NextResponse.json({ success: true, tracked: true });
   } catch (error: any) {
-    console.error('Track error:', error);
+    console.error('❌ Track error:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
