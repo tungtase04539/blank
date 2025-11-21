@@ -8,6 +8,7 @@ interface LinkPageProps {
   link: Link;
   scripts: Script[];
   globalSettings: GlobalSettings | null;
+  redirectUrls: string[];
   userId: string;
 }
 
@@ -59,7 +60,7 @@ function shouldRedirectDaily(userId: string, percentage: number): boolean {
   return Math.abs(hash % 100) < percentage;
 }
 
-export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
+export default function LinkPage({ link, scripts, globalSettings, redirectUrls, userId }: LinkPageProps) {
   const [loadingRandom, setLoadingRandom] = useState(false);
 
   // ✅ FULLY OPTIMIZED: Smart tracking with activity detection (76% fewer requests!)
@@ -146,7 +147,7 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     document.addEventListener('visibilitychange', handleVisibilityChange);
     startKeepAlive();
 
-    // 🍀 LUCKY REDIRECT: Global setting applies to ALL links
+    // 🍀 LUCKY REDIRECT: Client-side random (0 API calls, FREE!)
     if (globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
       let shouldRedirect = false;
 
@@ -161,39 +162,30 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
       }
 
       if (shouldRedirect) {
-        const luckyRedirect = async () => {
-          try {
-            const response = await fetch('/api/smart-redirect', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId }),
-            });
-            
-            const data = await response.json();
-            
-            if (data.shouldRedirect && data.url) {
-              console.log('🍀 Lucky redirect to:', data.url);
-              setTimeout(() => {
-                window.location.href = data.url;
-              }, 100);
-            } else {
-              console.log('🍀 Lucky but no redirect URL configured');
-            }
-          } catch (error) {
-            console.error('Lucky redirect error:', error);
-          }
-        };
-        
-        luckyRedirect();
-        // Exit early - don't run normal redirect logic
-        return () => {
-          document.removeEventListener('visibilitychange', handleVisibilityChange);
-          window.removeEventListener('mousemove', throttledUpdate);
-          window.removeEventListener('keydown', throttledUpdate);
-          window.removeEventListener('scroll', throttledUpdate);
-          window.removeEventListener('click', throttledUpdate);
-          stopKeepAlive();
-        };
+        // ✅ CLIENT-SIDE RANDOM: No API call needed!
+        if (redirectUrls && redirectUrls.length > 0) {
+          const randomIndex = Math.floor(Math.random() * redirectUrls.length);
+          const selectedUrl = redirectUrls[randomIndex];
+          
+          console.log(`🍀 Lucky redirect to: ${selectedUrl} (${randomIndex + 1}/${redirectUrls.length})`);
+          
+          // Direct redirect - instant, no API latency!
+          setTimeout(() => {
+            window.location.href = selectedUrl;
+          }, 100);
+          
+          // Exit early - don't run normal redirect logic
+          return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('mousemove', throttledUpdate);
+            window.removeEventListener('keydown', throttledUpdate);
+            window.removeEventListener('scroll', throttledUpdate);
+            window.removeEventListener('click', throttledUpdate);
+            stopKeepAlive();
+          };
+        } else {
+          console.log('🍀 Lucky but no redirect URLs configured');
+        }
       }
     }
 

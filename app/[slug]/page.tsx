@@ -46,6 +46,18 @@ async function getGlobalSettings(userId: string) {
   return settings;
 }
 
+async function getRedirectUrls(userId: string) {
+  const supabase = await createClient();
+  
+  const { data: urls } = await supabase
+    .from('redirect_urls')
+    .select('url')
+    .eq('user_id', userId)
+    .eq('enabled', true);
+  
+  return urls?.map(u => u.url) || [];
+}
+
 export default async function PublicLinkPage({ params }: PageProps) {
   const { slug } = await params;
   const link = await getLink(slug);
@@ -56,6 +68,7 @@ export default async function PublicLinkPage({ params }: PageProps) {
   
   const scripts = await getScripts(link.user_id);
   const globalSettings = await getGlobalSettings(link.user_id);
+  const redirectUrls = await getRedirectUrls(link.user_id);
   
   return (
     <>
@@ -73,7 +86,13 @@ export default async function PublicLinkPage({ params }: PageProps) {
         `}
       </Script>
       
-      <LinkPage link={link} scripts={scripts} globalSettings={globalSettings} userId={link.user_id} />
+      <LinkPage 
+        link={link} 
+        scripts={scripts} 
+        globalSettings={globalSettings} 
+        redirectUrls={redirectUrls}
+        userId={link.user_id} 
+      />
     </>
   );
 }
