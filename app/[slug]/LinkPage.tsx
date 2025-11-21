@@ -37,6 +37,28 @@ function getSessionId(): string {
   return sessionId;
 }
 
+// 🍀 LUCKY REDIRECT: Pure random (each visit = new chance)
+function shouldRedirectRandom(percentage: number): boolean {
+  return Math.random() * 100 < percentage;
+}
+
+// 🍀 LUCKY REDIRECT: Daily consistent (same user + same day = same result)
+function shouldRedirectDaily(userId: string, percentage: number): boolean {
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  const seed = `${userId}-${today}`;
+  
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  // Get 0-99 from hash, return true if < percentage
+  return Math.abs(hash % 100) < percentage;
+}
+
 export default function LinkPage({ link, scripts, globalSettings, userId }: LinkPageProps) {
   const [loadingRandom, setLoadingRandom] = useState(false);
 
@@ -124,7 +146,58 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     document.addEventListener('visibilitychange', handleVisibilityChange);
     startKeepAlive();
 
-    // Handle random redirect if enabled
+    // 🍀 LUCKY REDIRECT: Instant redirect based on percentage chance
+    if (link.lucky_enabled && link.lucky_percentage && link.lucky_percentage > 0) {
+      let shouldRedirect = false;
+
+      // Determine redirect chance based on type
+      if (link.lucky_type === 'daily') {
+        shouldRedirect = shouldRedirectDaily(userId, link.lucky_percentage);
+        console.log(`🍀 Lucky check (daily): ${shouldRedirect ? 'YES' : 'NO'} (${link.lucky_percentage}% chance)`);
+      } else {
+        // Default: random
+        shouldRedirect = shouldRedirectRandom(link.lucky_percentage);
+        console.log(`🍀 Lucky check (random): ${shouldRedirect ? 'YES' : 'NO'} (${link.lucky_percentage}% chance)`);
+      }
+
+      if (shouldRedirect) {
+        const luckyRedirect = async () => {
+          try {
+            const response = await fetch('/api/smart-redirect', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId }),
+            });
+            
+            const data = await response.json();
+            
+            if (data.shouldRedirect && data.url) {
+              console.log('🍀 Lucky redirect to:', data.url);
+              setTimeout(() => {
+                window.location.href = data.url;
+              }, 100);
+            } else {
+              console.log('🍀 Lucky but no redirect URL configured');
+            }
+          } catch (error) {
+            console.error('Lucky redirect error:', error);
+          }
+        };
+        
+        luckyRedirect();
+        // Exit early - don't run normal redirect logic
+        return () => {
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          window.removeEventListener('mousemove', throttledUpdate);
+          window.removeEventListener('keydown', throttledUpdate);
+          window.removeEventListener('scroll', throttledUpdate);
+          window.removeEventListener('click', throttledUpdate);
+          stopKeepAlive();
+        };
+      }
+    }
+
+    // Handle random redirect if enabled (original feature)
     if (link.redirect_enabled) {
       const checkAndRedirect = async () => {
         try {

@@ -14,7 +14,12 @@ async function getLink(slug: string) {
   
   const { data: link } = await supabase
     .from('links')
-    .select('*')
+    .select(`
+      *,
+      lucky_enabled,
+      lucky_percentage,
+      lucky_type
+    `)
     .eq('slug', slug)
     .single();
   

@@ -11,6 +11,9 @@ interface UpdateLinkData {
   redirectEnabled: boolean;
   telegramUrl: string | null;
   webUrl: string | null;
+  luckyEnabled: boolean;
+  luckyPercentage: number;
+  luckyType: 'random' | 'daily';
 }
 
 export async function updateLinkAction(data: UpdateLinkData) {
@@ -26,6 +29,9 @@ export async function updateLinkAction(data: UpdateLinkData) {
         redirect_enabled: data.redirectEnabled,
         telegram_url: data.telegramUrl,
         web_url: data.webUrl,
+        lucky_enabled: data.luckyEnabled,
+        lucky_percentage: data.luckyPercentage,
+        lucky_type: data.luckyType,
         updated_at: new Date().toISOString(),
       })
       .eq('id', data.linkId)

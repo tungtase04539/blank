@@ -16,6 +16,9 @@ export interface Link {
   redirect_enabled: boolean;
   telegram_url: string | null;
   web_url: string | null;
+  lucky_enabled?: boolean;
+  lucky_percentage?: number;
+  lucky_type?: 'random' | 'daily';
   created_at: string;
   updated_at: string;
 }
