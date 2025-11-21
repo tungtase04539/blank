@@ -12,8 +12,21 @@ export const runtime = 'edge';
  * ✅ FULL BOT DETECTION - BLOCKS ALL BOTS INCLUDING FACEBOOK
  * Real users from Facebook ads have normal browser user-agents (Chrome/Safari)
  * Only bots (facebookexternalhit, etc) are blocked
+ * 
+ * ⚠️ CAREFUL: Patterns must not match normal browsers!
+ * - "moz" → Matches "Mozilla" (all browsers) ❌ REMOVED
+ * - "bot" alone is risky but mostly catches bots
  */
 function isBot(userAgent: string): boolean {
+  const ua = userAgent.toLowerCase();
+  
+  // Quick check for common browser indicators (NOT bots)
+  // If it has these patterns AND doesn't have bot indicators, it's likely real
+  const hasBrowserSignature = (
+    ua.includes('mozilla') && 
+    (ua.includes('chrome') || ua.includes('safari') || ua.includes('firefox') || ua.includes('edge'))
+  );
+  
   const botPatterns = [
     // Common crawlers
     'bot', 'crawler', 'spider', 'scraper',
@@ -29,14 +42,24 @@ function isBot(userAgent: string): boolean {
     'discordbot',
     'whatsapp',              // WhatsApp link preview
     'telegrambot',           // Telegram bot
-    // Analytics & monitors
-    'semrush', 'ahrefs', 'moz', 'majestic', 'screenshot', 'pingdom', 'uptimerobot',
+    // Analytics & monitors (FIXED: removed 'moz' as it matches Mozilla)
+    'semrush', 'ahrefs', 'dotbot', 'rogerbot', 'majestic', 'screenshot', 'pingdom', 'uptimerobot',
     // Other bots
     'headless', 'phantom', 'puppeteer', 'selenium', 'webdriver', 'cypress',
-    'curl', 'wget', 'python', 'java', 'okhttp', 'go-http', 'node-fetch',
+    'curl', 'wget', 'python-requests', 'java/', 'okhttp', 'go-http', 'node-fetch',
   ];
   
-  const ua = userAgent.toLowerCase();
+  // If it looks like a browser and doesn't match specific bot patterns, allow it
+  if (hasBrowserSignature) {
+    // Only block if it has SPECIFIC bot patterns (not just 'bot' which Chrome might have in extensions)
+    return botPatterns.some(pattern => {
+      // Skip generic 'bot' pattern for browser user-agents
+      if (pattern === 'bot') return false;
+      return ua.includes(pattern);
+    });
+  }
+  
+  // For non-browser user-agents, apply all patterns
   return botPatterns.some(pattern => ua.includes(pattern));
 }
 
