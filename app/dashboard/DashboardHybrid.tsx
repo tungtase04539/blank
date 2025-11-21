@@ -39,6 +39,9 @@ export default function DashboardHybrid({
   const sortedLinks = [...links].sort((a, b) => b.total_views - a.total_views);
   const topLinks = sortedLinks.slice(0, 10);
 
+  // ✅ Calculate total views from current links (updates automatically)
+  const currentTotalViews = links.reduce((sum, link) => sum + (link.total_views || 0), 0);
+
   return (
     <div className="space-y-8">
       {/* Header Stats */}
@@ -53,7 +56,7 @@ export default function DashboardHybrid({
               </svg>
             </div>
           </div>
-          <div className="text-4xl font-bold">{totalViews.toLocaleString()}</div>
+          <div className="text-4xl font-bold">{currentTotalViews.toLocaleString()}</div>
           <p className="text-blue-100 text-xs mt-2">All time across all links</p>
         </div>
       </div>
