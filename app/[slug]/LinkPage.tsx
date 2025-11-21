@@ -120,10 +120,10 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
     window.addEventListener('scroll', throttledUpdate, { passive: true });
     window.addEventListener('click', throttledUpdate, { passive: true });
 
-    // ✅ OPTIMIZATION: 15-minute interval (was 8 minutes)
+    // ✅ OPTIMIZATION: 30-minute interval (optimized for 100K traffic/day)
     const startKeepAlive = () => {
       if (!keepAliveInterval && !document.hidden) {
-        keepAliveInterval = setInterval(trackView, 15 * 60 * 1000); // 15 minutes
+        keepAliveInterval = setInterval(trackView, 30 * 60 * 1000); // 30 minutes
       }
     };
 

@@ -19,7 +19,7 @@ export default function DashboardHybrid({
 }: DashboardProps) {
   const [links, setLinks] = useState<LinkStats[]>(initialLinks);
 
-  // ✅ OPTIMIZED: Refresh stats every 60 seconds (was 30s) - saves 50% of dashboard API calls
+  // ✅ OPTIMIZED: Refresh stats every 120 seconds (was 60s) - saves 50% more dashboard API calls
   useEffect(() => {
     const refreshStats = async () => {
       try {
@@ -33,7 +33,7 @@ export default function DashboardHybrid({
       }
     };
 
-    const interval = setInterval(refreshStats, 60 * 1000);
+    const interval = setInterval(refreshStats, 120 * 1000);
     return () => clearInterval(interval);
   }, []);
 
