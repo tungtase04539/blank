@@ -39,12 +39,7 @@ async function getGlobalSettings(userId: string) {
   
   const { data: settings } = await supabase
     .from('global_settings')
-    .select(`
-      *,
-      lucky_enabled,
-      lucky_percentage,
-      lucky_type
-    `)
+    .select('*')
     .eq('user_id', userId)
     .single();
   

@@ -261,16 +261,17 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
                 </div>
               </div>
 
-              {/* Save Button */}
-              <button
-                onClick={handleSaveLuckySettings}
-                disabled={luckyLoading}
-                className="w-full btn bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 font-semibold py-3"
-              >
-                {luckyLoading ? 'Saving...' : '💾 Save Lucky Settings'}
-              </button>
             </div>
           )}
+
+          {/* Save Button - ALWAYS VISIBLE */}
+          <button
+            onClick={handleSaveLuckySettings}
+            disabled={luckyLoading}
+            className="w-full btn bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 font-semibold py-3 shadow-lg"
+          >
+            {luckyLoading ? '⏳ Saving...' : '💾 Save Lucky Settings'}
+          </button>
 
           {/* Info */}
           <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
