@@ -26,8 +26,8 @@ function isBot(userAgent: string): boolean {
 }
 
 /**
- * Track pageview and online session
- * Optimized to use ONE database function call
+ * Track pageview only (online session tracking removed for cost optimization)
+ * Optimized for high traffic scenarios
  */
 export async function POST(request: NextRequest) {
   try {
@@ -37,37 +37,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, blocked: 'bot' }, { status: 200 });
     }
 
-    const { linkId, sessionId } = await request.json();
+    const { linkId } = await request.json();
 
-    if (!linkId || !sessionId) {
+    if (!linkId) {
       return NextResponse.json(
-        { error: 'Missing linkId or sessionId' },
+        { error: 'Missing linkId' },
         { status: 400 }
       );
     }
 
     const supabase = await createClient();
 
-    // Call 2 database functions in parallel (optimized!)
-    const [viewResult, sessionResult] = await Promise.all([
-      // Increment daily view count
-      supabase.rpc('increment_daily_views', {
-        p_link_id: linkId,
-        p_date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
-      }),
-      // Update online session
-      supabase.rpc('update_online_session', {
-        p_link_id: linkId,
-        p_session_id: sessionId,
-      }),
-    ]);
+    // Only increment daily view count (online session tracking removed)
+    const { error: viewError } = await supabase.rpc('increment_daily_views', {
+      p_link_id: linkId,
+      p_date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+    });
 
-    if (viewResult.error) {
-      console.error('Track view error:', viewResult.error);
-    }
-
-    if (sessionResult.error) {
-      console.error('Track session error:', sessionResult.error);
+    if (viewError) {
+      console.error('Track view error:', viewError);
     }
 
     return NextResponse.json({ success: true });

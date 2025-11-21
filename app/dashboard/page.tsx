@@ -8,19 +8,15 @@ export const dynamic = 'force-dynamic';
 async function getDashboardStats(userId: string) {
   const supabase = await createClient();
   
-  // Get link stats from the view (includes total_views and online_count)
+  // Get link stats from the view (includes total_views)
   const { data: links } = await supabase
     .from('link_stats')
     .select('*')
     .eq('user_id', userId)
     .order('total_views', { ascending: false });
   
-  // Calculate total views and online count
+  // Calculate total views
   const totalViews = links?.reduce((sum, link) => sum + (link.total_views || 0), 0) || 0;
-  
-  // Get total online count using database function
-  const { data: onlineData } = await supabase.rpc('get_total_online_count');
-  const totalOnline = onlineData || 0;
   
   // Get last 7 days chart data
   const { data: chartData } = await supabase
@@ -37,7 +33,6 @@ async function getDashboardStats(userId: string) {
   return {
     links: links || [],
     totalViews,
-    totalOnline,
     chartData: formattedChartData,
   };
 }
@@ -60,7 +55,6 @@ export default async function DashboardPage() {
           initialLinks={stats.links}
           chartData={stats.chartData}
           totalViews={stats.totalViews}
-          totalOnline={stats.totalOnline}
         />
       </main>
     </div>

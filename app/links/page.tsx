@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 async function getLinks(userId: string, sortBy: string = 'created') {
   const supabase = await createClient();
   
-  // Use link_stats view which includes total_views and online_count
+  // Use link_stats view which includes total_views
   const { data: links } = await supabase
     .from('link_stats')
     .select('*')
@@ -20,8 +20,6 @@ async function getLinks(userId: string, sortBy: string = 'created') {
   // Sort links
   if (sortBy === 'clicks') {
     linksWithCounts.sort((a, b) => b.total_views - a.total_views);
-  } else if (sortBy === 'online') {
-    linksWithCounts.sort((a, b) => b.online_count - a.online_count);
   } else {
     linksWithCounts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }

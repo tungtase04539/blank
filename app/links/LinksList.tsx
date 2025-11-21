@@ -85,7 +85,6 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
   }
 
   const totalClicks = links.reduce((sum, link) => sum + link.total_views, 0);
-  const totalOnline = links.reduce((sum, link) => sum + link.online_count, 0);
 
   const closeModal = () => {
     setShowNewLinksModal(false);
@@ -227,7 +226,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
       )}
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
           <div className="flex items-center justify-between mb-2">
             <div className="text-blue-100 text-sm font-medium">Total Links</div>
@@ -250,21 +249,6 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
             </div>
           </div>
           <div className="text-3xl font-bold">{totalClicks.toLocaleString()}</div>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-purple-100 text-sm font-medium">Online Now</div>
-            <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-          </div>
-          <div className="text-3xl font-bold flex items-center">
-            {totalOnline}
-            <span className="ml-2 w-2 h-2 bg-green-300 rounded-full animate-ping"></span>
-          </div>
         </div>
 
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-5 text-white shadow-lg transform hover:scale-105 transition-transform">
@@ -316,21 +300,6 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                   <span>Most clicks</span>
                 </span>
               </button>
-              <button
-                onClick={() => handleSortChange('online')}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  currentSort === 'online'
-                    ? 'bg-white text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <span className="flex items-center space-x-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <span>Trending</span>
-                </span>
-              </button>
             </div>
           </div>
           
@@ -377,40 +346,16 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
 
             {/* Stats Section */}
             <div className="px-5 py-4 bg-gray-50">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Total Views</div>
-                      <div className="text-2xl font-bold text-gray-900">{link.total_views.toLocaleString()}</div>
-                    </div>
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-                      </svg>
-                    </div>
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Total Views</div>
+                    <div className="text-3xl font-bold text-gray-900">{link.total_views.toLocaleString()}</div>
                   </div>
-                </div>
-
-                <div className="bg-white rounded-lg p-3 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-500 mb-1">Online Now</div>
-                      <div className="text-2xl font-bold text-green-600 flex items-center">
-                        {link.online_count}
-                        {link.online_count > 0 && (
-                          <span className="ml-2 flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                    </svg>
                   </div>
                 </div>
               </div>

@@ -63,9 +63,8 @@ function shouldRedirectDaily(userId: string, percentage: number): boolean {
 export default function LinkPage({ link, scripts, globalSettings, redirectUrls, userId }: LinkPageProps) {
   const [loadingRandom, setLoadingRandom] = useState(false);
 
-  // ✅ FULLY OPTIMIZED: Smart tracking with activity detection (76% fewer requests!)
+  // ✅ OPTIMIZED: Simple tracking without online session (cost savings!)
   useEffect(() => {
-    const sid = getSessionId();
     let keepAliveInterval: NodeJS.Timeout | null = null;
     let lastActivityTime = Date.now();
 
@@ -89,7 +88,6 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             linkId: link.id,
-            sessionId: sid,
           }),
         });
       } catch (error) {
