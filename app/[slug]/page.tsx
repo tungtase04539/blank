@@ -14,12 +14,7 @@ async function getLink(slug: string) {
   
   const { data: link } = await supabase
     .from('links')
-    .select(`
-      *,
-      lucky_enabled,
-      lucky_percentage,
-      lucky_type
-    `)
+    .select('*')
     .eq('slug', slug)
     .single();
   
@@ -44,7 +39,12 @@ async function getGlobalSettings(userId: string) {
   
   const { data: settings } = await supabase
     .from('global_settings')
-    .select('*')
+    .select(`
+      *,
+      lucky_enabled,
+      lucky_percentage,
+      lucky_type
+    `)
     .eq('user_id', userId)
     .single();
   

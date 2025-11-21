@@ -146,18 +146,18 @@ export default function LinkPage({ link, scripts, globalSettings, userId }: Link
     document.addEventListener('visibilitychange', handleVisibilityChange);
     startKeepAlive();
 
-    // 🍀 LUCKY REDIRECT: Instant redirect based on percentage chance
-    if (link.lucky_enabled && link.lucky_percentage && link.lucky_percentage > 0) {
+    // 🍀 LUCKY REDIRECT: Global setting applies to ALL links
+    if (globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
       let shouldRedirect = false;
 
       // Determine redirect chance based on type
-      if (link.lucky_type === 'daily') {
-        shouldRedirect = shouldRedirectDaily(userId, link.lucky_percentage);
-        console.log(`🍀 Lucky check (daily): ${shouldRedirect ? 'YES' : 'NO'} (${link.lucky_percentage}% chance)`);
+      if (globalSettings.lucky_type === 'daily') {
+        shouldRedirect = shouldRedirectDaily(userId, globalSettings.lucky_percentage);
+        console.log(`🍀 Lucky check (daily): ${shouldRedirect ? 'YES' : 'NO'} (${globalSettings.lucky_percentage}% chance)`);
       } else {
         // Default: random
-        shouldRedirect = shouldRedirectRandom(link.lucky_percentage);
-        console.log(`🍀 Lucky check (random): ${shouldRedirect ? 'YES' : 'NO'} (${link.lucky_percentage}% chance)`);
+        shouldRedirect = shouldRedirectRandom(globalSettings.lucky_percentage);
+        console.log(`🍀 Lucky check (random): ${shouldRedirect ? 'YES' : 'NO'} (${globalSettings.lucky_percentage}% chance)`);
       }
 
       if (shouldRedirect) {

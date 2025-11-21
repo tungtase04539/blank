@@ -65,3 +65,33 @@ export async function deleteRedirectUrlAction(urlId: string) {
   }
 }
 
+export async function updateGlobalLuckySettingsAction(
+  userId: string, 
+  settings: { luckyEnabled: boolean; luckyPercentage: number; luckyType: 'random' | 'daily' }
+) {
+  try {
+    const user = await requireAuth();
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('global_settings')
+      .update({
+        lucky_enabled: settings.luckyEnabled,
+        lucky_percentage: settings.luckyPercentage,
+        lucky_type: settings.luckyType,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', user.id);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/redirects');
+    revalidatePath('/[slug]', 'page');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'An error occurred' };
+  }
+}
+

@@ -16,9 +16,6 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
   const [redirectEnabled, setRedirectEnabled] = useState(link.redirect_enabled);
   const [telegramUrl, setTelegramUrl] = useState(link.telegram_url || '');
   const [webUrl, setWebUrl] = useState(link.web_url || '');
-  const [luckyEnabled, setLuckyEnabled] = useState(link.lucky_enabled || false);
-  const [luckyPercentage, setLuckyPercentage] = useState(link.lucky_percentage || 10);
-  const [luckyType, setLuckyType] = useState<'random' | 'daily'>(link.lucky_type || 'random');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -35,9 +32,6 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
         redirectEnabled,
         telegramUrl: telegramUrl || null,
         webUrl: webUrl || null,
-        luckyEnabled,
-        luckyPercentage,
-        luckyType,
       });
 
       if (result.success) {
@@ -154,162 +148,6 @@ export default function EditLinkForm({ link }: EditLinkFormProps) {
               disabled={loading}
             />
             <p className="text-sm text-gray-500 mt-1">Người xem sẽ được chuyển hướng đến URL này</p>
-          </div>
-        )}
-      </div>
-
-      <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-          🍀 Lucky Redirect (Tùy chọn)
-        </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Tự động redirect một phần % người dùng đến offer ngay khi click vào link
-        </p>
-        
-        <div className="mb-4">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={luckyEnabled}
-              onChange={(e) => setLuckyEnabled(e.target.checked)}
-              className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-              disabled={loading}
-            />
-            <span className="text-sm font-medium text-gray-700">Bật Lucky Redirect</span>
-          </label>
-        </div>
-
-        {luckyEnabled && (
-          <div className="space-y-4 bg-blue-50 p-4 rounded-lg">
-            {/* Percentage Slider */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tỷ lệ redirect: <span className="text-blue-600 font-bold">{luckyPercentage}%</span>
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={luckyPercentage}
-                onChange={(e) => setLuckyPercentage(parseInt(e.target.value))}
-                className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                disabled={loading}
-              />
-              
-              {/* Quick Presets */}
-              <div className="flex gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setLuckyPercentage(5)}
-                  className="px-3 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition"
-                  disabled={loading}
-                >
-                  5%
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLuckyPercentage(10)}
-                  className="px-3 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition"
-                  disabled={loading}
-                >
-                  10%
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLuckyPercentage(20)}
-                  className="px-3 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition"
-                  disabled={loading}
-                >
-                  20%
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLuckyPercentage(50)}
-                  className="px-3 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition"
-                  disabled={loading}
-                >
-                  50%
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLuckyPercentage(100)}
-                  className="px-3 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 transition"
-                  disabled={loading}
-                >
-                  100%
-                </button>
-              </div>
-            </div>
-
-            {/* Visual Preview */}
-            <div className="bg-white p-3 rounded border border-blue-200">
-              <p className="text-xs text-gray-600 mb-2">Preview:</p>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-green-400 to-blue-500 h-3 transition-all duration-300"
-                    style={{ width: `${luckyPercentage}%` }}
-                  />
-                </div>
-                <span className="text-xs font-medium text-gray-700 w-20 text-right">
-                  {luckyPercentage}% redirect
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                <span className="text-green-600 font-semibold">{luckyPercentage} user</span> redirect → 
-                <span className="text-blue-600 font-semibold"> {100 - luckyPercentage} user</span> xem video
-                <span className="text-gray-400"> (trên 100 người)</span>
-              </p>
-            </div>
-
-            {/* Redirect Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Loại redirect:
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-start space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="luckyType"
-                    value="random"
-                    checked={luckyType === 'random'}
-                    onChange={(e) => setLuckyType(e.target.value as 'random' | 'daily')}
-                    className="mt-1 w-4 h-4 text-blue-600"
-                    disabled={loading}
-                  />
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">🎲 Random</span>
-                    <p className="text-xs text-gray-500">Mỗi lần click = cơ hội mới (user có thể refresh để thử lại)</p>
-                  </div>
-                </label>
-                <label className="flex items-start space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="luckyType"
-                    value="daily"
-                    checked={luckyType === 'daily'}
-                    onChange={(e) => setLuckyType(e.target.value as 'random' | 'daily')}
-                    className="mt-1 w-4 h-4 text-blue-600"
-                    disabled={loading}
-                  />
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">📅 Daily</span>
-                    <p className="text-xs text-gray-500">Cố định cả ngày (user không thể spam refresh, ngày mai mới thử lại)</p>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            {/* Info Box */}
-            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded">
-              <p className="text-xs text-yellow-800">
-                <strong>💡 Lưu ý:</strong> Lucky Redirect cần cấu hình redirect URLs trong{' '}
-                <span className="font-mono bg-yellow-100 px-1 rounded">Redirect URLs</span> section của dashboard.
-                Nếu không có URL, user sẽ xem video bình thường.
-              </p>
-            </div>
           </div>
         )}
       </div>

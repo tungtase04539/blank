@@ -17,9 +17,22 @@ async function getRedirectUrls(userId: string) {
   return urls || [];
 }
 
+async function getGlobalSettings(userId: string) {
+  const supabase = await createClient();
+  
+  const { data: settings } = await supabase
+    .from('global_settings')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  
+  return settings;
+}
+
 export default async function RedirectsPage() {
   const user = await requireAuth();
   const redirectUrls = await getRedirectUrls(user.id);
+  const globalSettings = await getGlobalSettings(user.id);
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -28,7 +41,7 @@ export default async function RedirectsPage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Redirect URLs Management</h1>
-          <p className="text-gray-600 mt-2">Configure URL list for random redirect</p>
+          <p className="text-gray-600 mt-2">Configure URL list for random redirect and lucky settings</p>
         </div>
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -42,7 +55,7 @@ export default async function RedirectsPage() {
           </ul>
         </div>
         
-        <RedirectsList urls={redirectUrls} userId={user.id} />
+        <RedirectsList urls={redirectUrls} userId={user.id} globalSettings={globalSettings} />
       </main>
     </div>
   );
