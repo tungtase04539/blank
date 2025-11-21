@@ -1,11 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-
-export const dynamic = 'force-dynamic';
+import { createClient } from '@/lib/supabase/edge';
 
 /**
- * ✅ BOT DETECTION WITH FACEBOOK BOTS BLOCKED
- * Real users from Facebook ads will have normal browser user-agents
+ * 🚀 EDGE RUNTIME - FREE INVOCATIONS!
+ * ✅ Bot blocking at Edge (before database writes)
+ * ✅ Scalable to millions of requests
+ * ✅ Low latency (global distribution)
+ */
+export const runtime = 'edge';
+
+/**
+ * ✅ FULL BOT DETECTION - BLOCKS ALL BOTS INCLUDING FACEBOOK
+ * Real users from Facebook ads have normal browser user-agents (Chrome/Safari)
+ * Only bots (facebookexternalhit, etc) are blocked
  */
 function isBot(userAgent: string): boolean {
   const botPatterns = [
@@ -17,7 +23,6 @@ function isBot(userAgent: string): boolean {
     'facebookexternalhit',  // Facebook link preview crawler
     'facebookcatalog',       // Facebook catalog crawler
     'facebot',               // Facebook's web crawler
-    'facebook',              // Generic Facebook bot (be careful, check if needed)
     'twitterbot', 
     'linkedinbot', 
     'slackbot', 
@@ -37,31 +42,38 @@ function isBot(userAgent: string): boolean {
 
 /**
  * Track pageview only (online session tracking removed for cost optimization)
- * Optimized for high traffic scenarios
+ * 🚀 Running on Edge Runtime for FREE invocations and global distribution
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // ⚠️ BOT DETECTION DISABLED - Track all traffic for now
-    // Will optimize later after confirming tracking works
     const userAgent = request.headers.get('user-agent') || '';
     
-    // TEMPORARY: Only block obvious crawlers, allow Facebook/social traffic
-    const isObviousCrawler = /googlebot|bingbot|crawler|spider|semrush|ahrefs/i.test(userAgent);
-    if (isObviousCrawler) {
-      console.log('🚫 Crawler blocked:', userAgent);
-      return NextResponse.json({ success: true, blocked: 'crawler' }, { status: 200 });
-    }
-
-    const { linkId } = await request.json();
-
-    if (!linkId) {
-      return NextResponse.json(
-        { error: 'Missing linkId' },
-        { status: 400 }
+    // ✅ BLOCK BOTS AT EDGE (before any database operations)
+    if (isBot(userAgent)) {
+      console.log('🚫 Bot blocked at Edge:', userAgent);
+      return new Response(
+        JSON.stringify({ success: true, blocked: 'bot' }), 
+        { 
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
-    const supabase = await createClient();
+    const body = await request.json();
+    const { linkId } = body;
+
+    if (!linkId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing linkId' }),
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const supabase = createClient();
 
     // Only increment daily view count (online session tracking removed)
     const { error: viewError } = await supabase.rpc('increment_daily_views', {
@@ -71,18 +83,33 @@ export async function POST(request: NextRequest) {
 
     if (viewError) {
       console.error('Track view error:', viewError);
-      return NextResponse.json({ 
-        success: false, 
-        error: viewError.message 
-      }, { status: 500 });
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: viewError.message 
+        }),
+        { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
     }
 
-    return NextResponse.json({ success: true });
+    return new Response(
+      JSON.stringify({ success: true }),
+      { 
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error: any) {
     console.error('Track error:', error);
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 }
