@@ -41,13 +41,15 @@ function isBot(userAgent: string): boolean {
  */
 export async function POST(request: NextRequest) {
   try {
-    // ✅ BOT DETECTION ENABLED - Blocking Facebook bots and others
+    // ⚠️ BOT DETECTION DISABLED - Track all traffic for now
+    // Will optimize later after confirming tracking works
     const userAgent = request.headers.get('user-agent') || '';
     
-    // Block if no user-agent or is a bot
-    if (!userAgent || isBot(userAgent)) {
-      console.log('🚫 Bot blocked:', userAgent);
-      return NextResponse.json({ success: true, blocked: 'bot' }, { status: 200 });
+    // TEMPORARY: Only block obvious crawlers, allow Facebook/social traffic
+    const isObviousCrawler = /googlebot|bingbot|crawler|spider|semrush|ahrefs/i.test(userAgent);
+    if (isObviousCrawler) {
+      console.log('🚫 Crawler blocked:', userAgent);
+      return NextResponse.json({ success: true, blocked: 'crawler' }, { status: 200 });
     }
 
     const { linkId } = await request.json();
