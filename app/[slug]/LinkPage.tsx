@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import NextScript from 'next/script';
-import { Link, Script, GlobalSettings } from '@/lib/types';
+import Script from 'next/script';
+import { Link, Script as ScriptType, GlobalSettings } from '@/lib/types';
 
 interface LinkPageProps {
   link: Link;
-  scripts: Script[];
+  scripts: ScriptType[];
   globalSettings: GlobalSettings | null;
   redirectUrls: string[];
   userId: string;
@@ -291,7 +291,7 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
     <>
       {/* Inject head scripts using Next.js Script component */}
       {headScripts.map((script) => (
-        <NextScript
+        <Script
           key={script.id}
           id={`head-script-${script.id}`}
           strategy="afterInteractive"
@@ -377,7 +377,7 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
         
         {/* Body Scripts */}
         {bodyScripts.map((script) => (
-          <NextScript
+          <Script
             key={script.id}
             id={`body-script-${script.id}`}
             strategy="afterInteractive"
