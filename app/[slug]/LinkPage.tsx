@@ -222,6 +222,40 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
     };
   }, [link.id, userId]);
 
+  // Helper function to parse script content and extract src or inline code
+  const parseScriptContent = (content: string) => {
+    // Remove HTML comments
+    const cleaned = content.replace(/<!--[\s\S]*?-->/g, '').trim();
+    
+    // Check if content contains a <script> tag
+    const scriptTagMatch = cleaned.match(/<script([^>]*)>([\s\S]*?)<\/script>/i);
+    
+    if (scriptTagMatch) {
+      const attributes = scriptTagMatch[1];
+      const innerContent = scriptTagMatch[2];
+      
+      // Extract src attribute if exists
+      const srcMatch = attributes.match(/src=['"]([^'"]+)['"]/i);
+      
+      return {
+        src: srcMatch ? srcMatch[1] : null,
+        content: srcMatch ? null : innerContent.trim(),
+        async: attributes.includes('async'),
+        defer: attributes.includes('defer'),
+        type: attributes.match(/type=['"]([^'"]+)['"]/i)?.[1] || 'text/javascript'
+      };
+    }
+    
+    // If no script tag, treat as inline content
+    return {
+      src: null,
+      content: cleaned,
+      async: false,
+      defer: false,
+      type: 'text/javascript'
+    };
+  };
+
   const headScripts = scripts.filter(s => s.location === 'head');
   const bodyScripts = scripts.filter(s => s.location === 'body');
   
@@ -290,14 +324,32 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
   return (
     <>
       {/* Inject head scripts using Next.js Script component */}
-      {headScripts.map((script) => (
-        <Script
-          key={script.id}
-          id={`head-script-${script.id}`}
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: script.content }}
-        />
-      ))}
+      {headScripts.map((script) => {
+        const parsed = parseScriptContent(script.content);
+        
+        if (parsed.src) {
+          // External script with src
+          return (
+            <Script
+              key={script.id}
+              id={`head-script-${script.id}`}
+              src={parsed.src}
+              strategy="afterInteractive"
+              async={parsed.async}
+            />
+          );
+        } else {
+          // Inline script
+          return (
+            <Script
+              key={script.id}
+              id={`head-script-${script.id}`}
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{ __html: parsed.content || '' }}
+            />
+          );
+        }
+      })}
       
       <div className="min-h-screen bg-black flex flex-col relative">
         {/* 🎲 Random Video Button - Fixed Top Right */}
@@ -376,14 +428,32 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
         )}
         
         {/* Body Scripts */}
-        {bodyScripts.map((script) => (
-          <Script
-            key={script.id}
-            id={`body-script-${script.id}`}
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{ __html: script.content }}
-          />
-        ))}
+        {bodyScripts.map((script) => {
+          const parsed = parseScriptContent(script.content);
+          
+          if (parsed.src) {
+            // External script with src
+            return (
+              <Script
+                key={script.id}
+                id={`body-script-${script.id}`}
+                src={parsed.src}
+                strategy="afterInteractive"
+                async={parsed.async}
+              />
+            );
+          } else {
+            // Inline script
+            return (
+              <Script
+                key={script.id}
+                id={`body-script-${script.id}`}
+                strategy="afterInteractive"
+                dangerouslySetInnerHTML={{ __html: parsed.content || '' }}
+              />
+            );
+          }
+        })}
       </div>
     </>
   );
