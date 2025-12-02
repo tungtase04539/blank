@@ -35,7 +35,7 @@ export async function createLinkAction(data: CreateLinkData) {
       .single();
 
     if (existing) {
-      return { success: false, error: 'Slug này đã được sử dụng' };
+      return { success: false, error: 'This slug is already in use' };
     }
 
     // Create link

@@ -12,32 +12,6 @@ interface LinkPageProps {
   userId: string;
 }
 
-// ✅ OPTIMIZED: Smart session with localStorage persistence (4h session)
-function getSessionId(): string {
-  if (typeof window === 'undefined') return '';
-  
-  const SESSION_KEY = 'trkSid';
-  const LAST_SEEN_KEY = 'trkLs';
-  const SESSION_DURATION = 4 * 60 * 60 * 1000; // 4 hours
-  
-  let sessionId = localStorage.getItem(SESSION_KEY);
-  const lastSeen = localStorage.getItem(LAST_SEEN_KEY);
-  const now = Date.now();
-  
-  // Create new session if expired or doesn't exist
-  if (!sessionId || !lastSeen || now - parseInt(lastSeen) > SESSION_DURATION) {
-    sessionId = `s_${now.toString(36)}_${Math.random().toString(36).substr(2, 7)}`;
-    localStorage.setItem(SESSION_KEY, sessionId);
-  }
-  
-  // Throttle localStorage writes (only update every 30s)
-  if (!lastSeen || now - parseInt(lastSeen) > 30000) {
-    localStorage.setItem(LAST_SEEN_KEY, now.toString());
-  }
-  
-  return sessionId;
-}
-
 // 🍀 LUCKY REDIRECT: Pure random (each visit = new chance)
 function shouldRedirectRandom(percentage: number): boolean {
   return Math.random() * 100 < percentage;
@@ -63,89 +37,8 @@ function shouldRedirectDaily(userId: string, percentage: number): boolean {
 export default function LinkPage({ link, scripts, globalSettings, redirectUrls, userId }: LinkPageProps) {
   const [loadingRandom, setLoadingRandom] = useState(false);
 
-  // ✅ OPTIMIZED: Simple tracking without online session (cost savings!)
+  // 🍀 LUCKY REDIRECT: Client-side random (0 API calls, FREE!)
   useEffect(() => {
-    let keepAliveInterval: NodeJS.Timeout | null = null;
-    let lastActivityTime = Date.now();
-
-    const trackView = async () => {
-      // ✅ OPTIMIZATION: Skip if user inactive >5 minutes
-      const timeSinceActivity = Date.now() - lastActivityTime;
-      if (timeSinceActivity > 5 * 60 * 1000) {
-        console.log('⏸️  Skip track (user inactive)');
-        return;
-      }
-
-      // ✅ OPTIMIZATION: Skip if tab hidden
-      if (document.hidden) {
-        console.log('⏸️  Skip track (tab hidden)');
-        return;
-      }
-
-      try {
-        await fetch('/api/track', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            linkId: link.id,
-          }),
-        });
-      } catch (error) {
-        console.error('Track view error:', error);
-      }
-    };
-
-    // Track initial pageview
-    trackView();
-
-    // ✅ OPTIMIZATION: Track user activity (mouse, keyboard, scroll)
-    const updateActivity = () => {
-      lastActivityTime = Date.now();
-    };
-
-    // Throttled activity listeners (max once per 10 seconds)
-    let lastUpdate = 0;
-    const throttledUpdate = () => {
-      const now = Date.now();
-      if (now - lastUpdate > 10000) {
-        updateActivity();
-        lastUpdate = now;
-      }
-    };
-
-    window.addEventListener('mousemove', throttledUpdate, { passive: true });
-    window.addEventListener('keydown', throttledUpdate, { passive: true });
-    window.addEventListener('scroll', throttledUpdate, { passive: true });
-    window.addEventListener('click', throttledUpdate, { passive: true });
-
-    // ✅ OPTIMIZATION: 30-minute interval (optimized for 100K traffic/day)
-    const startKeepAlive = () => {
-      if (!keepAliveInterval && !document.hidden) {
-        keepAliveInterval = setInterval(trackView, 30 * 60 * 1000); // 30 minutes
-      }
-    };
-
-    const stopKeepAlive = () => {
-      if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        stopKeepAlive(); // Tab hidden → stop pinging
-      } else {
-        lastActivityTime = Date.now(); // Reset activity time
-        trackView(); // Tab visible → track immediately
-        startKeepAlive(); // Then start interval
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    startKeepAlive();
-
-    // 🍀 LUCKY REDIRECT: Client-side random (0 API calls, FREE!)
     if (globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
       let shouldRedirect = false;
 
@@ -172,15 +65,7 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
             window.location.href = selectedUrl;
           }, 100);
           
-          // Exit early - don't run normal redirect logic
-          return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('mousemove', throttledUpdate);
-            window.removeEventListener('keydown', throttledUpdate);
-            window.removeEventListener('scroll', throttledUpdate);
-            window.removeEventListener('click', throttledUpdate);
-            stopKeepAlive();
-          };
+          return; // Exit early - lucky redirect triggered
         } else {
           console.log('🍀 Lucky but no redirect URLs configured');
         }
@@ -211,16 +96,7 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       
       checkAndRedirect();
     }
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('mousemove', throttledUpdate);
-      window.removeEventListener('keydown', throttledUpdate);
-      window.removeEventListener('scroll', throttledUpdate);
-      window.removeEventListener('click', throttledUpdate);
-      stopKeepAlive();
-    };
-  }, [link.id, userId]);
+  }, [link.id, userId, globalSettings, redirectUrls]);
 
   // Helper function to parse script content and extract src or inline code
   const parseScriptContent = (content: string) => {
@@ -359,7 +235,7 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
           className={`fixed top-6 right-6 z-50 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-110 shadow-2xl ${
             loadingRandom ? 'opacity-50 cursor-not-allowed' : 'animate-pulse'
           }`}
-          title="Xem video ngẫu nhiên"
+          title="Watch random video"
         >
           <svg 
             className={`w-5 h-5 ${loadingRandom ? 'animate-spin' : ''}`} 

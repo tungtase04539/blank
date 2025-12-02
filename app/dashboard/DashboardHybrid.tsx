@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LinkStats } from '@/lib/types';
 import TrafficChart from './TrafficChart';
 
@@ -15,25 +15,7 @@ export default function DashboardHybrid({
   chartData, 
   totalViews
 }: DashboardProps) {
-  const [links, setLinks] = useState<LinkStats[]>(initialLinks);
-
-  // ✅ OPTIMIZED: Refresh stats every 120 seconds (was 60s) - saves 50% more dashboard API calls
-  useEffect(() => {
-    const refreshStats = async () => {
-      try {
-        const response = await fetch('/api/dashboard-stats');
-        if (response.ok) {
-          const data = await response.json();
-          setLinks(data.links);
-        }
-      } catch (error) {
-        console.error('Failed to refresh stats:', error);
-      }
-    };
-
-    const interval = setInterval(refreshStats, 120 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const [links] = useState<LinkStats[]>(initialLinks);
 
   // Sort links by total views
   const sortedLinks = [...links].sort((a, b) => b.total_views - a.total_views);

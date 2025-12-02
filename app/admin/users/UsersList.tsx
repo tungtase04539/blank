@@ -86,7 +86,7 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Mật khẩu *
+                Password *
               </label>
               <input
                 id="password"
@@ -103,7 +103,7 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Vai trò *
+                Role *
               </label>
               <div className="flex space-x-4">
                 <label className="flex items-center space-x-2 cursor-pointer">
@@ -154,7 +154,7 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
                 className="btn btn-secondary"
                 disabled={loading}
               >
-                Hủy
+                Cancel
               </button>
             </div>
           </form>
@@ -163,16 +163,16 @@ export default function UsersList({ users, currentUserId }: UsersListProps) {
 
       {/* Users List */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Danh Sách Users</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Users List</h3>
         
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-gray-200">
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Vai trò</th>
-                <th className="text-left py-3 px-4 font-semibold text-gray-700">Ngày tạo</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-700">Hành động</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">Role</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">Created Date</th>
+                <th className="text-right py-3 px-4 font-semibold text-gray-700">Actions</th>
               </tr>
             </thead>
             <tbody>

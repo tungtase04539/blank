@@ -114,7 +114,7 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
               🍀 Lucky Redirect <span className="ml-2 text-xs bg-green-500 text-white px-2 py-1 rounded-full">GLOBAL</span>
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              Tự động redirect một phần % người dùng đến offer ngay khi click - Áp dụng cho <strong>TẤT CẢ links</strong>
+              Automatically redirect a percentage of users to offer on click - Applies to <strong>ALL links</strong>
             </p>
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
               {/* Percentage Slider */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tỷ lệ redirect: <span className="text-green-600 font-bold text-lg">{luckyPercentage}%</span>
+                  Redirect rate: <span className="text-green-600 font-bold text-lg">{luckyPercentage}%</span>
                 </label>
                 <input
                   type="range"
@@ -218,14 +218,14 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
                 <p className="text-xs text-gray-600 mt-3">
                   <span className="text-green-600 font-bold">{luckyPercentage} users</span> redirect ngay → 
                   <span className="text-blue-600 font-bold"> {100 - luckyPercentage} users</span> xem video
-                  <span className="text-gray-400"> (trên 100 người)</span>
+                  <span className="text-gray-400"> (out of 100 people)</span>
                 </p>
               </div>
 
               {/* Redirect Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Loại redirect:
+                  Redirect type:
                 </label>
                 <div className="space-y-3">
                   <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition" style={{ borderColor: luckyType === 'random' ? '#10b981' : '#e5e7eb' }}>
@@ -240,7 +240,7 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
                     />
                     <div className="flex-1">
                       <span className="text-sm font-semibold text-gray-800">🎲 Random Mode</span>
-                      <p className="text-xs text-gray-500 mt-1">Mỗi lần click = cơ hội mới (user có thể refresh để thử lại)</p>
+                      <p className="text-xs text-gray-500 mt-1">Each click = new chance (user can refresh to try again)</p>
                     </div>
                   </label>
                   <label className="flex items-start space-x-3 cursor-pointer p-3 border-2 rounded-lg hover:bg-gray-50 transition" style={{ borderColor: luckyType === 'daily' ? '#10b981' : '#e5e7eb' }}>
@@ -255,7 +255,7 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
                     />
                     <div className="flex-1">
                       <span className="text-sm font-semibold text-gray-800">📅 Daily Mode</span>
-                      <p className="text-xs text-gray-500 mt-1">Cố định cả ngày (user không spam được, ngày mai mới reset) - <strong>Recommended ✓</strong></p>
+                      <p className="text-xs text-gray-500 mt-1">Fixed all day (user can't spam, resets tomorrow) - <strong>Recommended ✓</strong></p>
                     </div>
                   </label>
                 </div>
@@ -276,8 +276,8 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
           {/* Info */}
           <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
             <p className="text-xs text-yellow-800">
-              <strong>💡 Lưu ý:</strong> Lucky Redirect cần có redirect URLs phía dưới. 
-              Nếu không có URL nào enabled, users sẽ xem video bình thường.
+              <strong>💡 Note:</strong> Lucky Redirect requires redirect URLs below. 
+              If no URLs are enabled, users will watch videos normally.
             </p>
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
                 className="btn btn-secondary"
                 disabled={loading}
               >
-                Hủy
+                Cancel
               </button>
             </div>
           </form>
@@ -348,18 +348,18 @@ export default function RedirectsList({ urls, userId, globalSettings }: Redirect
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4">
         <div className="card bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-          <div className="text-blue-100 text-sm font-medium mb-1">Tổng URLs</div>
+          <div className="text-blue-100 text-sm font-medium mb-1">Total URLs</div>
           <div className="text-3xl font-bold">{urls.length}</div>
         </div>
         <div className="card bg-gradient-to-br from-green-500 to-emerald-600 text-white">
-          <div className="text-green-100 text-sm font-medium mb-1">URLs Đang Hoạt Động</div>
+          <div className="text-green-100 text-sm font-medium mb-1">Active URLs</div>
           <div className="text-3xl font-bold">{enabledUrls.length}</div>
         </div>
       </div>
 
       {/* URLs List */}
       <div className="card">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Danh Sách Redirect URLs</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Redirect URLs List</h3>
         
         {urls.length > 0 ? (
           <div className="space-y-3">

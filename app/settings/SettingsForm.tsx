@@ -61,7 +61,7 @@ export default function SettingsForm({ userId, initialSettings }: SettingsFormPr
           disabled={loading}
         />
         <p className="text-sm text-gray-500 mt-1">
-          URL Telegram channel/group của bạn
+          Your Telegram channel/group URL
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export default function SettingsForm({ userId, initialSettings }: SettingsFormPr
           disabled={loading}
         />
         <p className="text-sm text-gray-500 mt-1">
-          URL website chính của bạn
+          Your main website URL
         </p>
       </div>
 

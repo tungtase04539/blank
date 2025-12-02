@@ -45,7 +45,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Vị trí chèn script *
+          Script injection location *
         </label>
         <div className="flex space-x-4">
           <label className="flex items-center space-x-2 cursor-pointer">
@@ -75,7 +75,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
 
       <div>
         <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-          Nội dung script *
+          Script content *
         </label>
         <textarea
           id="content"
@@ -96,7 +96,7 @@ export default function CreateScriptForm({ userId }: CreateScriptFormProps) {
           disabled={loading}
         />
         <p className="text-sm text-gray-500 mt-1">
-          Nhập code HTML/JavaScript (bao gồm cả thẻ &lt;script&gt;)
+          Enter HTML/JavaScript code (including &lt;script&gt; tag)
         </p>
       </div>
 

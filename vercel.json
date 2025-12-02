@@ -3,12 +3,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["sin1"],
-  "crons": [
-    {
-      "path": "/api/cleanup-tracking",
-      "schedule": "0 2 * * *"
-    }
-  ]
+  "regions": ["sin1"]
 }
 

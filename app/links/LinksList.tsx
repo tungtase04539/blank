@@ -393,7 +393,7 @@ export default function LinksList({ links, appUrl, currentSort }: LinksListProps
                       ? 'bg-green-500 text-white hover:bg-green-600'
                       : 'btn-secondary'
                   }`}
-                  title={link.redirect_enabled ? 'Tắt redirect' : 'Bật redirect'}
+                  title={link.redirect_enabled ? 'Disable redirect' : 'Enable redirect'}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />

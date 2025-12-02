@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Quick Link System",
-  description: "Hệ thống tạo link nhanh với tracking",
+  description: "Quick link system with tracking",
 };
 
 export default function RootLayout({

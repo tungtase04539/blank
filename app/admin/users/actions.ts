@@ -23,7 +23,7 @@ export async function createUserAction(data: CreateUserData) {
       .single();
 
     if (existing) {
-      return { success: false, error: 'Email đã được sử dụng' };
+      return { success: false, error: 'Email is already in use' };
     }
 
     // Hash password

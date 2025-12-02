@@ -34,7 +34,7 @@ export default function TrafficChart({ data }: TrafficChartProps) {
     labels: data.map(d => d.date),
     datasets: [
       {
-        label: 'Lượt truy cập',
+        label: 'Visits',
         data: data.map(d => d.visits),
         borderColor: 'rgb(59, 130, 246)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
