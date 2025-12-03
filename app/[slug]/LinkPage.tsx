@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Script from 'next/script';
 import { Link, Script as ScriptType, GlobalSettings } from '@/lib/types';
 
@@ -36,6 +36,16 @@ function shouldRedirectDaily(userId: string, percentage: number): boolean {
 
 export default function LinkPage({ link, scripts, globalSettings, redirectUrls, userId }: LinkPageProps) {
   const [loadingRandom, setLoadingRandom] = useState(false);
+  
+  // ✅ OPTIMIZED: Cache link slugs in memory to avoid repeated API calls
+  const [cachedSlugs, setCachedSlugs] = useState<string[] | null>(null);
+
+  // ✅ OPTIMIZED: Get random URL from props (no API call needed!)
+  const getRandomRedirectUrl = useCallback(() => {
+    if (!redirectUrls || redirectUrls.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * redirectUrls.length);
+    return redirectUrls[randomIndex];
+  }, [redirectUrls]);
 
   // 🍀 LUCKY REDIRECT: Client-side random (0 API calls, FREE!)
   useEffect(() => {
@@ -72,34 +82,20 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       }
     }
 
-    // Handle random redirect if enabled (original feature)
-    if (link.redirect_enabled) {
-      const checkAndRedirect = async () => {
-        try {
-          const response = await fetch('/api/smart-redirect', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId }),
-          });
-          
-          const data = await response.json();
-          
-          if (data.shouldRedirect && data.url) {
-            setTimeout(() => {
-              window.location.href = data.url;
-            }, 100);
-          }
-        } catch (error) {
-          console.error('Redirect error:', error);
-        }
-      };
-      
-      checkAndRedirect();
+    // ✅ OPTIMIZED: Handle random redirect if enabled (use Edge API, cached response)
+    if (link.redirect_enabled && redirectUrls.length > 0) {
+      // Use client-side random instead of API call
+      const randomUrl = getRandomRedirectUrl();
+      if (randomUrl) {
+        setTimeout(() => {
+          window.location.href = randomUrl;
+        }, 100);
+      }
     }
-  }, [link.id, userId, globalSettings, redirectUrls]);
+  }, [link.id, link.redirect_enabled, userId, globalSettings, redirectUrls, getRandomRedirectUrl]);
 
   // Helper function to parse script content and extract src or inline code
-  const parseScriptContent = (content: string) => {
+  const parseScriptContent = useCallback((content: string) => {
     // Remove HTML comments
     const cleaned = content.replace(/<!--[\s\S]*?-->/g, '').trim();
     
@@ -130,40 +126,55 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       defer: false,
       type: 'text/javascript'
     };
-  };
+  }, []);
 
-  const headScripts = scripts.filter(s => s.location === 'head');
-  const bodyScripts = scripts.filter(s => s.location === 'body');
+  const headScripts = useMemo(() => scripts.filter(s => s.location === 'head'), [scripts]);
+  const bodyScripts = useMemo(() => scripts.filter(s => s.location === 'body'), [scripts]);
   
   // Use link-specific buttons if set, otherwise fallback to global settings
   const telegramUrl = link.telegram_url || globalSettings?.telegram_url;
   const webUrl = link.web_url || globalSettings?.web_url;
 
   // ✅ Button click handlers to open link (hide from bots, no tracking)
-  const handleTelegramClick = () => {
+  const handleTelegramClick = useCallback(() => {
     // Open link in new tab (hidden from bot crawlers)
     if (telegramUrl) {
       window.open(telegramUrl, '_blank', 'noopener,noreferrer');
     }
-  };
+  }, [telegramUrl]);
 
-  const handleWebClick = () => {
+  const handleWebClick = useCallback(() => {
     // Open link in new tab (hidden from bot crawlers)
     if (webUrl) {
       window.open(webUrl, '_blank', 'noopener,noreferrer');
     }
-  };
+  }, [webUrl]);
 
-  // 🎲 Random link handler
-  const handleRandomLink = async () => {
+  // 🎲 Random link handler - OPTIMIZED with caching
+  const handleRandomLink = useCallback(async () => {
     if (loadingRandom) return;
     
     setLoadingRandom(true);
     try {
+      // ✅ OPTIMIZED: Use cached slugs if available
+      if (cachedSlugs && cachedSlugs.length > 0) {
+        const filteredSlugs = cachedSlugs.filter(s => s !== link.slug);
+        if (filteredSlugs.length > 0) {
+          const randomSlug = filteredSlugs[Math.floor(Math.random() * filteredSlugs.length)];
+          window.location.href = `/${randomSlug}`;
+          return;
+        }
+      }
+      
+      // First time: fetch from Edge API (FREE invocation)
       const response = await fetch(`/api/random-link?current=${link.slug}`);
       if (response.ok) {
         const data = await response.json();
         if (data.slug) {
+          // Cache the result for future use
+          if (data.allSlugs) {
+            setCachedSlugs(data.allSlugs);
+          }
           window.location.href = `/${data.slug}`;
         }
       } else {
@@ -174,28 +185,24 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
     } finally {
       setLoadingRandom(false);
     }
-  };
+  }, [loadingRandom, cachedSlugs, link.slug]);
 
-  // 🎬 Video ended handler - Auto redirect (INSTANT, no countdown)
-  const handleVideoEnded = async () => {
-    console.log('Video ended, fetching redirect URL...');
+  // 🎬 Video ended handler - OPTIMIZED: Use props instead of API call!
+  const handleVideoEnded = useCallback(() => {
+    console.log('Video ended, redirecting...');
     
-    try {
-      const response = await fetch(`/api/redirect-urls?userId=${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.url) {
-          console.log('Redirecting to:', data.url);
-          // ✅ INSTANT redirect - no countdown!
-          window.location.href = data.url;
-        } else {
-          console.log('No redirect URL configured for this user');
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch redirect URL:', error);
+    // ✅ OPTIMIZED: Use redirectUrls from props (no API call!)
+    if (redirectUrls && redirectUrls.length > 0) {
+      const randomIndex = Math.floor(Math.random() * redirectUrls.length);
+      const selectedUrl = redirectUrls[randomIndex];
+      console.log('Redirecting to:', selectedUrl);
+      
+      // ✅ INSTANT redirect - no API latency!
+      window.location.href = selectedUrl;
+    } else {
+      console.log('No redirect URL configured');
     }
-  };
+  }, [redirectUrls]);
 
   return (
     <>

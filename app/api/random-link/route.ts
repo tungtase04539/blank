@@ -1,23 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/edge';
 
-export const dynamic = 'force-dynamic';
+// ✅ EDGE RUNTIME = FREE invocations! (No serverless function cost)
+export const runtime = 'edge';
+
+// ✅ Cache response at edge for 60 seconds
+export const revalidate = 60;
 
 /**
  * Get a random link slug (excluding current link)
+ * 🚀 OPTIMIZED: Edge Runtime + Response Cache
  */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const currentSlug = searchParams.get('current');
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Get all active links except current one
     let query = supabase
       .from('links')
       .select('slug')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100); // Limit for performance
 
     if (currentSlug) {
       query = query.neq('slug', currentSlug);
@@ -44,7 +50,15 @@ export async function GET(request: NextRequest) {
     const randomIndex = Math.floor(Math.random() * links.length);
     const randomSlug = links[randomIndex].slug;
 
-    return NextResponse.json({ slug: randomSlug });
+    // ✅ Add cache headers for edge caching
+    return NextResponse.json(
+      { slug: randomSlug },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
+      }
+    );
   } catch (error: any) {
     console.error('Random link API error:', error);
     return NextResponse.json(
@@ -53,4 +67,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

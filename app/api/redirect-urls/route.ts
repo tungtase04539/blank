@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/edge';
 
-export const dynamic = 'force-dynamic';
+// ✅ EDGE RUNTIME = FREE invocations!
+export const runtime = 'edge';
 
 /**
  * Get random redirect URL from user's enabled list
  * Used for auto-redirect when video ends
+ * 🚀 OPTIMIZED: Edge Runtime
  */
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +21,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Get all enabled redirect URLs for this user
     const { data: urls, error } = await supabase
@@ -59,4 +61,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

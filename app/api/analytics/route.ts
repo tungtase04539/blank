@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import { getTopOnlineLinks } from '@/lib/google-analytics';
 import { analyticsCache } from '@/lib/analytics-cache';
 
+// ⚠️ CANNOT use Edge Runtime - Google Analytics SDK requires Node.js
+// But we optimize with aggressive caching instead!
 export const dynamic = 'force-dynamic';
 
 /**
  * Lightweight API - Only fetches Top 10 Online Links
  * Real-time dashboard is handled by GA Embed (iframe)
- * This reduces API calls from 288/day to ~96/day (66% reduction)
+ * 🚀 OPTIMIZED: Stale-while-revalidate caching
  */
 export async function GET() {
   try {
@@ -29,7 +31,11 @@ export async function GET() {
           .catch(err => console.error('⚠️ Background refresh failed:', err));
       }
       
-      return NextResponse.json(cachedData);
+      return NextResponse.json(cachedData, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+        },
+      });
     }
 
     // No cache → fetch immediately (blocking)
@@ -37,10 +43,14 @@ export async function GET() {
     const topOnlineLinks = await getTopOnlineLinks();
     const response = { topOnlineLinks };
 
-    // Cache for 10 minutes (optimized from 5)
+    // Cache for 10 minutes
     analyticsCache.set(cacheKey, response, 10 * 60 * 1000);
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+      },
+    });
   } catch (error) {
     console.error('Top online links API error:', error);
     
@@ -57,4 +67,3 @@ export async function GET() {
     );
   }
 }
-

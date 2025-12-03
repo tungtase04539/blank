@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/edge';
 
+// ✅ EDGE RUNTIME = FREE invocations!
+export const runtime = 'edge';
+
+/**
+ * Smart redirect based on user settings
+ * 🚀 OPTIMIZED: Edge Runtime
+ */
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await request.json();
     
-    const supabase = await createClient();
+    const supabase = createClient();
     
     // Get active redirect URLs for this user
     const { data: redirectUrls } = await supabase
@@ -28,4 +35,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ shouldRedirect: false, url: null });
   }
 }
-
