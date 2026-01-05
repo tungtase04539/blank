@@ -66,22 +66,26 @@ export async function deleteRedirectUrlAction(urlId: string) {
 }
 
 export async function updateGlobalLuckySettingsAction(
-  userId: string, 
+  userId: string,
   settings: { luckyEnabled: boolean; luckyPercentage: number; luckyType: 'random' | 'daily' }
 ) {
   try {
     const user = await requireAuth();
     const supabase = await createClient();
 
+    // Use UPSERT to support both new accounts (INSERT) and existing accounts (UPDATE)
     const { error } = await supabase
       .from('global_settings')
-      .update({
+      .upsert({
+        user_id: user.id,
         lucky_enabled: settings.luckyEnabled,
         lucky_percentage: settings.luckyPercentage,
         lucky_type: settings.luckyType,
         updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id);
+      }, {
+        onConflict: 'user_id',  // If user_id already exists, update instead of insert
+        ignoreDuplicates: false
+      });
 
     if (error) {
       return { success: false, error: error.message };
