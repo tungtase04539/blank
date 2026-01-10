@@ -49,7 +49,8 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
 
   // 🍀 LUCKY REDIRECT: Client-side random (0 API calls, FREE!)
   useEffect(() => {
-    if (globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
+    // ✅ FIX: Chỉ lucky redirect nếu link.redirect_enabled = true
+    if (link.redirect_enabled && globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
       let shouldRedirect = false;
 
       // Determine redirect chance based on type
