@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import LinkPage from './LinkPage';
 import Script from 'next/script';
 
-// ✅ Static Generation + On-demand Revalidate
-// Pages được cache vĩnh viễn, chỉ update khi gọi revalidate API
-export const revalidate = false; // Disable time-based revalidation
+// ✅ Force dynamic để luôn fetch data mới (debug)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export const dynamicParams = true; // Cho phép generate pages mới
 
 interface PageProps {
