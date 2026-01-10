@@ -57,8 +57,20 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       'redirectUrls.length': redirectUrls?.length
     });
 
-    // ✅ FIX: Chỉ lucky redirect nếu link.redirect_enabled = true
-    if (link.redirect_enabled && globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
+    // Không redirect nếu link đã tắt redirect
+    if (!link.redirect_enabled) {
+      console.log('🔍 Redirect disabled for this link');
+      return;
+    }
+
+    // Không có redirect URLs thì không làm gì
+    if (!redirectUrls || redirectUrls.length === 0) {
+      console.log('🔍 No redirect URLs configured');
+      return;
+    }
+
+    // 🍀 LUCKY REDIRECT: Chỉ redirect theo % nếu lucky_enabled
+    if (globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
       let shouldRedirect = false;
 
       // Determine redirect chance based on type
@@ -72,34 +84,26 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       }
 
       if (shouldRedirect) {
-        // ✅ CLIENT-SIDE RANDOM: No API call needed!
-        if (redirectUrls && redirectUrls.length > 0) {
-          const randomIndex = Math.floor(Math.random() * redirectUrls.length);
-          const selectedUrl = redirectUrls[randomIndex];
-          
-          console.log(`🍀 Lucky redirect to: ${selectedUrl} (${randomIndex + 1}/${redirectUrls.length})`);
-          
-          // Direct redirect - instant, no API latency!
-          setTimeout(() => {
-            window.location.href = selectedUrl;
-          }, 100);
-          
-          return; // Exit early - lucky redirect triggered
-        } else {
-          console.log('🍀 Lucky but no redirect URLs configured');
-        }
-      }
-    }
-
-    // ✅ OPTIMIZED: Handle random redirect if enabled (use Edge API, cached response)
-    if (link.redirect_enabled && redirectUrls.length > 0) {
-      // Use client-side random instead of API call
-      const randomUrl = getRandomRedirectUrl();
-      if (randomUrl) {
+        const randomIndex = Math.floor(Math.random() * redirectUrls.length);
+        const selectedUrl = redirectUrls[randomIndex];
+        
+        console.log(`🍀 Lucky redirect to: ${selectedUrl} (${randomIndex + 1}/${redirectUrls.length})`);
+        
         setTimeout(() => {
-          window.location.href = randomUrl;
+          window.location.href = selectedUrl;
         }, 100);
       }
+      // Lucky enabled nhưng không trúng -> không redirect, user xem video
+      return;
+    }
+
+    // ✅ NORMAL REDIRECT: Nếu không có lucky, redirect 100%
+    console.log('🔄 Normal redirect (no lucky configured)');
+    const randomUrl = getRandomRedirectUrl();
+    if (randomUrl) {
+      setTimeout(() => {
+        window.location.href = randomUrl;
+      }, 100);
     }
   }, [link.id, link.redirect_enabled, userId, globalSettings, redirectUrls, getRandomRedirectUrl]);
 
