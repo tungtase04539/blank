@@ -235,11 +235,30 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       })}
       
       <div className="min-h-screen bg-black flex flex-col relative">
+        {/* ✨ Sparkle CTA Banner - Top Center */}
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center py-3 px-4 bg-gradient-to-r from-black/80 via-purple-900/50 to-black/80 backdrop-blur-sm">
+          <div className="float-animation flex items-center gap-2 text-center">
+            <span className="sparkle-star text-yellow-400 text-lg">✨</span>
+            <p className="text-base md:text-lg font-bold">
+              <span className="sparkle-banner">Your favorite videos are waiting. </span>
+              <a 
+                href="https://t.crjmpy.com/401016/3785/0?bo=2753,2754,2755,2756&target=banners&po=6456&aff_sub5=SF_006OG000004lmDN"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sparkle-link font-extrabold cursor-pointer transition-transform inline-block"
+              >
+                Sign up in 30 seconds.
+              </a>
+            </p>
+            <span className="sparkle-star text-yellow-400 text-lg">✨</span>
+          </div>
+        </div>
+
         {/* 🎲 Random Video Button - Fixed Top Right */}
         <button
           onClick={handleRandomLink}
           disabled={loadingRandom}
-          className={`fixed top-6 right-6 z-50 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-110 shadow-2xl ${
+          className={`fixed top-16 right-6 z-50 flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-full transition-all transform hover:scale-110 shadow-2xl ${
             loadingRandom ? 'opacity-50 cursor-not-allowed' : 'animate-pulse'
           }`}
           title="Watch random video"
