@@ -56,6 +56,8 @@ export async function createLinkAction(data: CreateLinkData) {
     }
 
     revalidatePath('/links');
+    // Revalidate public page mới tạo
+    revalidatePath(`/${data.slug}`);
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };
@@ -112,6 +114,10 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     }
 
     revalidatePath('/links');
+    // Revalidate tất cả public pages mới tạo
+    for (const link of linksToCreate) {
+      revalidatePath(`/${link.slug}`);
+    }
     return { 
       success: true, 
       count: linksToCreate.length,

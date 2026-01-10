@@ -3,18 +3,32 @@ import { notFound } from 'next/navigation';
 import LinkPage from './LinkPage';
 import Script from 'next/script';
 
-// ✅ ISR: Cache 10 phút - giảm 90% server renders
-export const revalidate = 600;
+// ✅ Static Generation + On-demand Revalidate
+// Pages được cache vĩnh viễn, chỉ update khi gọi revalidate API
+export const revalidate = false; // Disable time-based revalidation
+export const dynamicParams = true; // Cho phép generate pages mới
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-// ✅ OPTIMIZED: Dùng public client (không cần auth), queries chạy parallel
+// ✅ OPTIMIZED: Dùng database function (1 query thay vì 4)
 async function getLinkPageData(slug: string) {
   const supabase = createPublicClient();
 
-  // Query 1: Lấy link
+  // Thử dùng optimized function trước
+  const { data, error } = await supabase.rpc('get_link_page_data', { p_slug: slug });
+  
+  if (!error && data?.link) {
+    return {
+      link: data.link,
+      scripts: data.scripts || [],
+      globalSettings: data.globalSettings,
+      redirectUrls: data.redirectUrls || [],
+    };
+  }
+
+  // Fallback: queries riêng lẻ (nếu chưa chạy SQL)
   const { data: link } = await supabase
     .from('links')
     .select('*')
@@ -23,7 +37,6 @@ async function getLinkPageData(slug: string) {
 
   if (!link) return null;
 
-  // Query 2, 3, 4: Chạy parallel
   const [scriptsRes, settingsRes, urlsRes] = await Promise.all([
     supabase.from('scripts').select('*').eq('user_id', link.user_id).eq('enabled', true).order('created_at', { ascending: true }),
     supabase.from('global_settings').select('*').eq('user_id', link.user_id).single(),

@@ -8,6 +8,13 @@ export async function deleteLinkAction(linkId: string) {
   const user = await requireAuth();
   const supabase = await createClient();
   
+  // Lấy slug trước khi xóa để revalidate
+  const { data: link } = await supabase
+    .from('links')
+    .select('slug')
+    .eq('id', linkId)
+    .single();
+  
   await supabase
     .from('links')
     .delete()
@@ -15,11 +22,23 @@ export async function deleteLinkAction(linkId: string) {
     .eq('user_id', user.id);
   
   revalidatePath('/links');
+  
+  // Revalidate public page
+  if (link?.slug) {
+    revalidatePath(`/${link.slug}`);
+  }
 }
 
 export async function toggleRedirectAction(linkId: string, enabled: boolean) {
   const user = await requireAuth();
   const supabase = await createClient();
+  
+  // Lấy slug để revalidate
+  const { data: link } = await supabase
+    .from('links')
+    .select('slug')
+    .eq('id', linkId)
+    .single();
   
   await supabase
     .from('links')
@@ -28,5 +47,9 @@ export async function toggleRedirectAction(linkId: string, enabled: boolean) {
     .eq('user_id', user.id);
   
   revalidatePath('/links');
+  
+  // Revalidate public page
+  if (link?.slug) {
+    revalidatePath(`/${link.slug}`);
+  }
 }
-
