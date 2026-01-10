@@ -3,6 +3,16 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["sin1"]
+  "regions": ["sin1"],
+  "functions": {
+    "app/**/*.tsx": {
+      "memory": 512,
+      "maxDuration": 10
+    },
+    "app/api/**/*.ts": {
+      "memory": 256,
+      "maxDuration": 10
+    }
+  }
 }
 

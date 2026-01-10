@@ -1,80 +1,55 @@
-import { createClient } from '@/lib/supabase/server';
+import { createPublicClient } from '@/lib/supabase/public';
 import { notFound } from 'next/navigation';
 import LinkPage from './LinkPage';
 import Script from 'next/script';
 
-// ✅ ISR: Cache pages for 60 seconds, revalidate in background
-// This reduces server renders by ~90% for popular pages
-export const revalidate = 60;
+// ✅ ISR: Cache 10 phút - giảm 90% server renders
+export const revalidate = 600;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getLink(slug: string) {
-  const supabase = await createClient();
-  
+// ✅ OPTIMIZED: Dùng public client (không cần auth), queries chạy parallel
+async function getLinkPageData(slug: string) {
+  const supabase = createPublicClient();
+
+  // Query 1: Lấy link
   const { data: link } = await supabase
     .from('links')
     .select('*')
     .eq('slug', slug)
     .single();
-  
-  return link;
-}
 
-async function getScripts(userId: string) {
-  const supabase = await createClient();
-  
-  const { data: scripts } = await supabase
-    .from('scripts')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('enabled', true)
-    .order('created_at', { ascending: true });
-  
-  return scripts || [];
-}
+  if (!link) return null;
 
-async function getGlobalSettings(userId: string) {
-  const supabase = await createClient();
-  
-  const { data: settings } = await supabase
-    .from('global_settings')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-  
-  return settings;
-}
+  // Query 2, 3, 4: Chạy parallel
+  const [scriptsRes, settingsRes, urlsRes] = await Promise.all([
+    supabase.from('scripts').select('*').eq('user_id', link.user_id).eq('enabled', true).order('created_at', { ascending: true }),
+    supabase.from('global_settings').select('*').eq('user_id', link.user_id).single(),
+    supabase.from('redirect_urls').select('url').eq('user_id', link.user_id).eq('enabled', true),
+  ]);
 
-async function getRedirectUrls(userId: string) {
-  const supabase = await createClient();
-  
-  const { data: urls } = await supabase
-    .from('redirect_urls')
-    .select('url')
-    .eq('user_id', userId)
-    .eq('enabled', true);
-  
-  return urls?.map(u => u.url) || [];
+  return {
+    link,
+    scripts: scriptsRes.data || [],
+    globalSettings: settingsRes.data,
+    redirectUrls: urlsRes.data?.map(u => u.url) || [],
+  };
 }
 
 export default async function PublicLinkPage({ params }: PageProps) {
   const { slug } = await params;
-  const link = await getLink(slug);
-  
-  if (!link) {
+  const data = await getLinkPageData(slug);
+
+  if (!data) {
     notFound();
   }
-  
-  const scripts = await getScripts(link.user_id);
-  const globalSettings = await getGlobalSettings(link.user_id);
-  const redirectUrls = await getRedirectUrls(link.user_id);
-  
+
+  const { link, scripts, globalSettings, redirectUrls } = data;
+
   return (
     <>
-      {/* Google Analytics - Hardcoded for reliability */}
       <Script
         src="https://www.googletagmanager.com/gtag/js?id=G-P0Y80ZBPPC"
         strategy="afterInteractive"

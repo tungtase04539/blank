@@ -3,8 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import Navbar from '@/components/Navbar';
 import DashboardHybrid from './DashboardHybrid';
 
-// ✅ ISR: Revalidate every 5 minutes (saves 85% of server renders!)
-export const revalidate = 300;
+// ✅ ISR: Revalidate every 10 minutes (tiết kiệm server renders)
+export const revalidate = 600;
 
 async function getDashboardStats(userId: string) {
   const supabase = await createClient();
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
             </div>
             <div className="ml-3">
               <p className="text-sm text-green-700">
-                <strong>💰 Cost Optimized:</strong> Dashboard updates every 5 minutes to minimize server costs. 
+                <strong>💰 Cost Optimized:</strong> Dashboard updates every 10 minutes to minimize server costs. 
                 Use Google Analytics for real-time detailed traffic insights.
               </p>
             </div>
