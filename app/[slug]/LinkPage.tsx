@@ -50,18 +50,12 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
   // 🍀 LUCKY REDIRECT: Client-side random (0 API calls, FREE!)
   useEffect(() => {
     // Debug log
-    console.log('🔍 Lucky redirect check:', {
+    console.log('🔍 Redirect check:', {
       'link.redirect_enabled': link.redirect_enabled,
       'globalSettings?.lucky_enabled': globalSettings?.lucky_enabled,
       'globalSettings?.lucky_percentage': globalSettings?.lucky_percentage,
       'redirectUrls.length': redirectUrls?.length
     });
-
-    // Không redirect nếu link đã tắt redirect
-    if (!link.redirect_enabled) {
-      console.log('🔍 Redirect disabled for this link');
-      return;
-    }
 
     // Không có redirect URLs thì không làm gì
     if (!redirectUrls || redirectUrls.length === 0) {
@@ -69,7 +63,7 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       return;
     }
 
-    // 🍀 LUCKY REDIRECT: Chỉ redirect theo % nếu lucky_enabled
+    // 🍀 LUCKY REDIRECT (GLOBAL): Áp dụng cho tất cả links khi lucky_enabled = true
     if (globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
       let shouldRedirect = false;
 
@@ -97,13 +91,15 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       return;
     }
 
-    // ✅ NORMAL REDIRECT: Nếu không có lucky, redirect 100%
-    console.log('🔄 Normal redirect (no lucky configured)');
-    const randomUrl = getRandomRedirectUrl();
-    if (randomUrl) {
-      setTimeout(() => {
-        window.location.href = randomUrl;
-      }, 100);
+    // ✅ PER-LINK REDIRECT: Chỉ redirect nếu link.redirect_enabled = true (không có lucky)
+    if (link.redirect_enabled) {
+      console.log('🔄 Per-link redirect enabled');
+      const randomUrl = getRandomRedirectUrl();
+      if (randomUrl) {
+        setTimeout(() => {
+          window.location.href = randomUrl;
+        }, 100);
+      }
     }
   }, [link.id, link.redirect_enabled, userId, globalSettings, redirectUrls, getRandomRedirectUrl]);
 
