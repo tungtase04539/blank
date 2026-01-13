@@ -300,15 +300,8 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
           <div className="float-animation flex items-center gap-2 text-center">
             <span className="sparkle-star text-yellow-400 text-lg">✨</span>
             <p className="text-base md:text-lg font-bold">
-              <span className="sparkle-banner">Your favorite videos are waiting. </span>
-              <a 
-                href="https://t.crjmpy.com/401016/3785/0?bo=2753,2754,2755,2756&target=banners&po=6456&aff_sub5=SF_006OG000004lmDN"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="sparkle-link font-extrabold cursor-pointer inline-block"
-              >
-                Sign up in 30 seconds
-              </a>
+              <span className="sparkle-banner">Join Fap House for free, </span>
+              <span className="sparkle-link font-extrabold">sign up to get 4k video</span>
               <span className="free-badge">Free</span>
             </p>
             <span className="sparkle-star text-yellow-400 text-lg">✨</span>
