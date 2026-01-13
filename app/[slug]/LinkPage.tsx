@@ -300,9 +300,9 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
           <div className="float-animation flex items-center gap-2 text-center">
             <span className="sparkle-star text-yellow-400 text-lg">✨</span>
             <p className="text-base md:text-lg font-bold">
-              <span className="sparkle-banner">Join Fap House for free, </span>
-              <span className="sparkle-link font-extrabold">sign up to get 4k video</span>
-              <span className="free-badge">Free</span>
+              <span className="sparkle-banner">🔥 NEW: Fap House - </span>
+              <span className="sparkle-link font-extrabold">Unlimited 4K from 50+ countries</span>
+              <span className="free-badge">FREE</span>
             </p>
             <span className="sparkle-star text-yellow-400 text-lg">✨</span>
           </div>
