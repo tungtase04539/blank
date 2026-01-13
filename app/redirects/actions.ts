@@ -99,3 +99,100 @@ export async function updateGlobalLuckySettingsAction(
   }
 }
 
+// =============================================
+// ⏱️ TIMED REDIRECT (5s) ACTIONS
+// =============================================
+
+export async function createTimedRedirectUrlAction(userId: string, url: string) {
+  try {
+    await requireAuth();
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('timed_redirect_urls')
+      .insert({
+        user_id: userId,
+        url: url,
+        enabled: true,
+      });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/redirects');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'An error occurred' };
+  }
+}
+
+export async function toggleTimedRedirectUrlAction(urlId: string, enabled: boolean) {
+  try {
+    await requireAuth();
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('timed_redirect_urls')
+      .update({ enabled })
+      .eq('id', urlId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/redirects');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'An error occurred' };
+  }
+}
+
+export async function deleteTimedRedirectUrlAction(urlId: string) {
+  try {
+    await requireAuth();
+    const supabase = await createClient();
+
+    await supabase
+      .from('timed_redirect_urls')
+      .delete()
+      .eq('id', urlId);
+
+    revalidatePath('/redirects');
+  } catch (error) {
+    console.error('Error deleting timed redirect URL:', error);
+  }
+}
+
+export async function updateTimedRedirectSettingsAction(
+  userId: string,
+  settings: { timedRedirectEnabled: boolean; timedRedirectDelay: number }
+) {
+  try {
+    const user = await requireAuth();
+    const supabase = await createClient();
+
+    const { error } = await supabase
+      .from('global_settings')
+      .upsert({
+        user_id: user.id,
+        timed_redirect_enabled: settings.timedRedirectEnabled,
+        timed_redirect_delay: settings.timedRedirectDelay,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id',
+        ignoreDuplicates: false
+      });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath('/redirects');
+    revalidatePath('/[slug]', 'page');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: 'An error occurred' };
+  }
+}
+

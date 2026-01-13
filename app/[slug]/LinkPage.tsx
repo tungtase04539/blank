@@ -9,6 +9,7 @@ interface LinkPageProps {
   scripts: ScriptType[];
   globalSettings: GlobalSettings | null;
   redirectUrls: string[];
+  timedRedirectUrls: string[];
   userId: string;
 }
 
@@ -34,11 +35,15 @@ function shouldRedirectDaily(userId: string, percentage: number): boolean {
   return Math.abs(hash % 100) < percentage;
 }
 
-export default function LinkPage({ link, scripts, globalSettings, redirectUrls, userId }: LinkPageProps) {
+export default function LinkPage({ link, scripts, globalSettings, redirectUrls, timedRedirectUrls, userId }: LinkPageProps) {
   const [loadingRandom, setLoadingRandom] = useState(false);
   
   // ✅ OPTIMIZED: Cache link slugs in memory to avoid repeated API calls
   const [cachedSlugs, setCachedSlugs] = useState<string[] | null>(null);
+
+  // ⏱️ TIMED REDIRECT: Countdown state
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [luckyRedirected, setLuckyRedirected] = useState(false);
 
   // ✅ OPTIMIZED: Get random URL from props (no API call needed!)
   const getRandomRedirectUrl = useCallback(() => {
@@ -54,17 +59,19 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       'link.redirect_enabled': link.redirect_enabled,
       'globalSettings?.lucky_enabled': globalSettings?.lucky_enabled,
       'globalSettings?.lucky_percentage': globalSettings?.lucky_percentage,
-      'redirectUrls.length': redirectUrls?.length
+      'redirectUrls.length': redirectUrls?.length,
+      'globalSettings?.timed_redirect_enabled': globalSettings?.timed_redirect_enabled,
+      'timedRedirectUrls.length': timedRedirectUrls?.length
     });
-
-    // Không có redirect URLs thì không làm gì
-    if (!redirectUrls || redirectUrls.length === 0) {
-      console.log('🔍 No redirect URLs configured');
-      return;
-    }
 
     // 🍀 LUCKY REDIRECT (GLOBAL): Áp dụng cho tất cả links khi lucky_enabled = true
     if (globalSettings?.lucky_enabled && globalSettings.lucky_percentage && globalSettings.lucky_percentage > 0) {
+      // Không có redirect URLs thì không làm gì
+      if (!redirectUrls || redirectUrls.length === 0) {
+        console.log('🔍 No redirect URLs configured for Lucky Redirect');
+        return;
+      }
+
       let shouldRedirect = false;
 
       // Determine redirect chance based on type
@@ -78,6 +85,7 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       }
 
       if (shouldRedirect) {
+        setLuckyRedirected(true);
         const randomIndex = Math.floor(Math.random() * redirectUrls.length);
         const selectedUrl = redirectUrls[randomIndex];
         
@@ -86,22 +94,65 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
         setTimeout(() => {
           window.location.href = selectedUrl;
         }, 100);
+        return;
       }
-      // Lucky enabled nhưng không trúng -> không redirect, user xem video
-      return;
+      // Lucky enabled nhưng không trúng -> tiếp tục xuống kiểm tra timed redirect
     }
 
     // ✅ PER-LINK REDIRECT: Chỉ redirect nếu link.redirect_enabled = true (không có lucky)
-    if (link.redirect_enabled) {
+    if (!globalSettings?.lucky_enabled && link.redirect_enabled && redirectUrls && redirectUrls.length > 0) {
       console.log('🔄 Per-link redirect enabled');
       const randomUrl = getRandomRedirectUrl();
       if (randomUrl) {
+        setLuckyRedirected(true);
         setTimeout(() => {
           window.location.href = randomUrl;
         }, 100);
+        return;
       }
     }
-  }, [link.id, link.redirect_enabled, userId, globalSettings, redirectUrls, getRandomRedirectUrl]);
+  }, [link.id, link.redirect_enabled, userId, globalSettings, redirectUrls, timedRedirectUrls, getRandomRedirectUrl]);
+
+  // ⏱️ TIMED REDIRECT: Start countdown after Lucky Redirect check completes
+  useEffect(() => {
+    // Nếu đã bị Lucky redirect thì không cần timed redirect
+    if (luckyRedirected) {
+      console.log('⏱️ Timed redirect skipped - Lucky redirect already triggered');
+      return;
+    }
+
+    // Kiểm tra timed redirect enabled và có URLs
+    if (!globalSettings?.timed_redirect_enabled) {
+      console.log('⏱️ Timed redirect disabled');
+      return;
+    }
+
+    if (!timedRedirectUrls || timedRedirectUrls.length === 0) {
+      console.log('⏱️ No timed redirect URLs configured');
+      return;
+    }
+
+    const delay = globalSettings?.timed_redirect_delay || 5;
+    console.log(`⏱️ Starting timed redirect countdown: ${delay}s`);
+    setCountdown(delay);
+
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === null || prev <= 1) {
+          clearInterval(timer);
+          // Redirect to random URL from timed list
+          const randomIndex = Math.floor(Math.random() * timedRedirectUrls.length);
+          const selectedUrl = timedRedirectUrls[randomIndex];
+          console.log(`⏱️ Timed redirect to: ${selectedUrl} (${randomIndex + 1}/${timedRedirectUrls.length})`);
+          window.location.href = selectedUrl;
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [luckyRedirected, globalSettings?.timed_redirect_enabled, globalSettings?.timed_redirect_delay, timedRedirectUrls]);
 
   // Helper function to parse script content and extract src or inline code
   const parseScriptContent = useCallback((content: string) => {

@@ -25,6 +25,7 @@ async function getLinkPageData(slug: string) {
       scripts: data.scripts || [],
       globalSettings: data.globalSettings,
       redirectUrls: data.redirectUrls || [],
+      timedRedirectUrls: data.timedRedirectUrls || [],
     };
   }
 
@@ -37,10 +38,11 @@ async function getLinkPageData(slug: string) {
 
   if (!link) return null;
 
-  const [scriptsRes, settingsRes, urlsRes] = await Promise.all([
+  const [scriptsRes, settingsRes, urlsRes, timedUrlsRes] = await Promise.all([
     supabase.from('scripts').select('*').eq('user_id', link.user_id).eq('enabled', true).order('created_at', { ascending: true }),
     supabase.from('global_settings').select('*').eq('user_id', link.user_id).single(),
     supabase.from('redirect_urls').select('url').eq('user_id', link.user_id).eq('enabled', true),
+    supabase.from('timed_redirect_urls').select('url').eq('user_id', link.user_id).eq('enabled', true),
   ]);
 
   return {
@@ -48,6 +50,7 @@ async function getLinkPageData(slug: string) {
     scripts: scriptsRes.data || [],
     globalSettings: settingsRes.data,
     redirectUrls: urlsRes.data?.map(u => u.url) || [],
+    timedRedirectUrls: timedUrlsRes.data?.map(u => u.url) || [],
   };
 }
 
@@ -59,7 +62,7 @@ export default async function PublicLinkPage({ params }: PageProps) {
     notFound();
   }
 
-  const { link, scripts, globalSettings, redirectUrls } = data;
+  const { link, scripts, globalSettings, redirectUrls, timedRedirectUrls } = data;
 
   return (
     <>
@@ -81,6 +84,7 @@ export default async function PublicLinkPage({ params }: PageProps) {
         scripts={scripts} 
         globalSettings={globalSettings} 
         redirectUrls={redirectUrls}
+        timedRedirectUrls={timedRedirectUrls}
         userId={link.user_id} 
       />
     </>

@@ -66,6 +66,8 @@ export interface GlobalSettings {
   lucky_enabled?: boolean;
   lucky_percentage?: number;
   lucky_type?: 'random' | 'daily';
+  timed_redirect_enabled?: boolean;
+  timed_redirect_delay?: number;
   created_at: string;
   updated_at: string;
 }
