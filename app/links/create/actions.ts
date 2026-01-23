@@ -129,8 +129,15 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     
     const totalCreated = results.reduce((sum, r) => sum + r.count, 0);
     const allCreatedSlugs = results.flatMap(r => r.slugs);
+    const failedCount = totalLinks - totalCreated;
 
-    console.log(`Total created: ${totalCreated}/${totalLinks} links`);
+    console.log(`✅ Batch results:`, results.map((r, i) => `Batch ${i+1}: ${r.count} links`));
+    console.log(`✅ Total created: ${totalCreated}/${totalLinks} links`);
+    console.log(`✅ Total slugs: ${allCreatedSlugs.length}`);
+    
+    if (failedCount > 0) {
+      console.error(`❌ Failed: ${failedCount} links`);
+    }
 
     // Chỉ revalidate list page
     revalidatePath('/links');
@@ -141,8 +148,8 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
       slugs: allCreatedSlugs,
       message: totalCreated === totalLinks 
         ? `Created ${totalCreated} links successfully`
-        : `Created ${totalCreated}/${totalLinks} links (${totalLinks - totalCreated} failed)`,
-      failedCount: totalLinks - totalCreated
+        : `Created ${totalCreated}/${totalLinks} links (${failedCount} failed)`,
+      failedCount: failedCount
     };
   } catch (error) {
     console.error('Unexpected error:', error);

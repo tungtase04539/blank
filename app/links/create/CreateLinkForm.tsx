@@ -51,17 +51,36 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
 
         if (result.success) {
           // Show detailed message
-          const message = result.failedCount && result.failedCount > 0
-            ? `⚠️ Created ${result.count}/${urls.length} links. ${result.failedCount} failed. Check server logs for details.`
-            : `✅ Created ${result.count} links successfully!`;
-          
-          alert(message);
-          
-          if (result.slugs && result.slugs.length > 0) {
-            // Redirect with new slugs in URL params
-            router.push(`/links?new=${result.slugs.join(',')}`);
+          if (result.failedCount && result.failedCount > 0) {
+            const proceed = confirm(
+              `⚠️ Warning: Only created ${result.count}/${urls.length} links successfully.\n\n` +
+              `${result.failedCount} links failed to create.\n\n` +
+              `This might be due to:\n` +
+              `- Duplicate video URLs\n` +
+              `- Database timeout\n` +
+              `- Network issues\n\n` +
+              `Click OK to view created links, or Cancel to stay here.`
+            );
+            
+            if (proceed) {
+              if (result.slugs && result.slugs.length > 0) {
+                router.push(`/links?new=${result.slugs.join(',')}`);
+              } else {
+                router.push('/links');
+              }
+            } else {
+              setLoading(false);
+              return;
+            }
           } else {
-            router.push('/links');
+            // All success
+            alert(`✅ Successfully created ${result.count} links!`);
+            
+            if (result.slugs && result.slugs.length > 0) {
+              router.push(`/links?new=${result.slugs.join(',')}`);
+            } else {
+              router.push('/links');
+            }
           }
         } else {
           setError(result.error || 'Cannot create links');
