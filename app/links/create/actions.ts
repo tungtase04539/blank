@@ -69,15 +69,14 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     const supabase = await createClient();
     const totalLinks = data.videoUrls.length;
     
-    // ✅ ZERO-CHECK APPROACH: Generate slugs với timestamp + counter = 100% unique
-    const timestamp = Date.now().toString(36); // Base36 timestamp
-    const randomPrefix = Math.random().toString(36).substring(2, 5); // 3 ký tự random
+    // ✅ ZERO-CHECK: Generate slugs ngắn gọn với timestamp + random
+    const baseTimestamp = Date.now();
     
     const linksToCreate = data.videoUrls.map((videoUrl, index) => {
-      // Format: {random}{timestamp}{counter}mp4
-      // VD: abc1k2j3f001mp4, abc1k2j3f002mp4, ...
-      const counter = index.toString(36).padStart(3, '0'); // Base36 counter
-      const slug = `${randomPrefix}${timestamp}${counter}mp4`.substring(0, 15); // Giới hạn 15 ký tự
+      // Random 5 ký tự + 3 ký tự từ timestamp
+      const random5 = Math.random().toString(36).substring(2, 7); // 5 chars
+      const timeChars = ((baseTimestamp + index) % 46656).toString(36).padStart(3, '0'); // 3 chars (0-zzz)
+      const slug = `${random5}${timeChars}mp4`; // Total: 8 chars + mp4 = 11 chars
       
       return {
         user_id: data.userId,
@@ -90,22 +89,20 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
       };
     });
 
-    // ✅ Insert trực tiếp - KHÔNG CẦN CHECK (timestamp + counter = unique)
-    // Nếu có conflict (cực kỳ hiếm), database sẽ báo lỗi và retry
+    // ✅ Insert trực tiếp - KHÔNG CẦN CHECK
     const { error } = await supabase
       .from('links')
       .insert(linksToCreate);
 
     if (error) {
-      // Nếu có conflict (rất hiếm), fallback về cách cũ
-      if (error.code === '23505') { // Unique constraint violation
-        console.log('Slug conflict detected, retrying with new timestamp...');
+      // Nếu có conflict (rất hiếm), retry với random mới
+      if (error.code === '23505') {
+        console.log('Slug conflict detected, retrying...');
         
-        // Retry với timestamp mới
-        const newTimestamp = (Date.now() + 1).toString(36);
         const retryLinks = data.videoUrls.map((videoUrl, index) => {
-          const counter = index.toString(36).padStart(3, '0');
-          const slug = `${randomPrefix}${newTimestamp}${counter}mp4`.substring(0, 15);
+          const random5 = Math.random().toString(36).substring(2, 7);
+          const timeChars = ((Date.now() + index) % 46656).toString(36).padStart(3, '0');
+          const slug = `${random5}${timeChars}mp4`;
           
           return {
             user_id: data.userId,
@@ -144,7 +141,6 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     }
 
     revalidatePath('/links');
-    // Revalidate tất cả public pages mới tạo
     for (const link of linksToCreate) {
       revalidatePath(`/${link.slug}`);
     }
