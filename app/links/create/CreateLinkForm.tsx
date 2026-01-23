@@ -63,11 +63,8 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
             );
             
             if (proceed) {
-              if (result.slugs && result.slugs.length > 0) {
-                router.push(`/links?new=${result.slugs.join(',')}`);
-              } else {
-                router.push('/links');
-              }
+              // Không truyền slugs qua URL (quá dài), chỉ redirect về list
+              router.push('/links');
             } else {
               setLoading(false);
               return;
@@ -75,12 +72,8 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           } else {
             // All success
             alert(`✅ Successfully created ${result.count} links!`);
-            
-            if (result.slugs && result.slugs.length > 0) {
-              router.push(`/links?new=${result.slugs.join(',')}`);
-            } else {
-              router.push('/links');
-            }
+            // Không truyền slugs qua URL, chỉ redirect về list
+            router.push('/links');
           }
         } else {
           setError(result.error || 'Cannot create links');
@@ -132,7 +125,7 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
             placeholder="xyz123mp4"
             required
             disabled={loading}
-            pattern="[a-zA-Z0-9_-]+"
+            pattern="[a-zA-Z0-9_\-]+"
             title="Only letters, numbers, underscore, and hyphen"
           />
           <button
