@@ -50,6 +50,10 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
         });
 
         if (result.success && result.slugs) {
+          // Show warning if some links failed
+          if (result.failedCount && result.failedCount > 0) {
+            alert(`⚠️ ${result.message}`);
+          }
           // Redirect with new slugs in URL params
           router.push(`/links?new=${result.slugs.join(',')}`);
         } else {
