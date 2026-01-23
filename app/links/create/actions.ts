@@ -71,23 +71,26 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     
     console.log(`Creating ${totalLinks} links...`);
     
-    // ✅ BATCH INSERT: Chia nhỏ để tránh timeout
-    const BATCH_SIZE = 20; // Insert 20 links mỗi lần
-    const allCreatedSlugs: string[] = [];
-    let totalCreated = 0;
+    // ✅ PARALLEL BATCH INSERT: Insert nhiều batches cùng lúc
+    const BATCH_SIZE = 25; // 25 links mỗi batch
+    const batches: string[][] = [];
+    
+    // Chia thành batches
+    for (let i = 0; i < totalLinks; i += BATCH_SIZE) {
+      batches.push(data.videoUrls.slice(i, i + BATCH_SIZE));
+    }
+    
+    console.log(`Split into ${batches.length} batches`);
     
     const baseTimestamp = Date.now();
     const sessionRandom = Math.random().toString(36).substring(2, 5);
     
-    // Chia thành các batches
-    for (let i = 0; i < totalLinks; i += BATCH_SIZE) {
-      const batchUrls = data.videoUrls.slice(i, i + BATCH_SIZE);
-      const batchIndex = Math.floor(i / BATCH_SIZE);
-      
-      console.log(`Processing batch ${batchIndex + 1}/${Math.ceil(totalLinks / BATCH_SIZE)} (${batchUrls.length} links)`);
+    // Insert tất cả batches song song
+    const batchPromises = batches.map(async (batchUrls, batchIndex) => {
+      const startIndex = batchIndex * BATCH_SIZE;
       
       const linksToCreate = batchUrls.map((videoUrl, idx) => {
-        const globalIndex = i + idx;
+        const globalIndex = startIndex + idx;
         const indexChars = globalIndex.toString(36).padStart(2, '0');
         const timeChars = ((baseTimestamp + globalIndex * 7) % 46656).toString(36).padStart(3, '0');
         const slug = `${sessionRandom}${indexChars}${timeChars}mp4`;
@@ -103,67 +106,33 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
         };
       });
 
-      // Insert batch
       const { data: insertedData, error } = await supabase
         .from('links')
         .insert(linksToCreate)
         .select('slug');
 
       if (error) {
-        console.error(`Batch ${batchIndex + 1} error:`, error);
-        
-        // Nếu conflict, retry batch này
-        if (error.code === '23505') {
-          console.log(`Retrying batch ${batchIndex + 1}...`);
-          
-          const retryLinks = batchUrls.map((videoUrl, idx) => {
-            const globalIndex = i + idx;
-            const indexChars = globalIndex.toString(36).padStart(2, '0');
-            const timeChars = ((Date.now() + globalIndex * 13) % 46656).toString(36).padStart(3, '0');
-            const newRandom = Math.random().toString(36).substring(2, 5);
-            const slug = `${newRandom}${indexChars}${timeChars}mp4`;
-            
-            return {
-              user_id: data.userId,
-              slug: slug,
-              video_url: videoUrl,
-              destination_url: data.destinationUrl,
-              redirect_enabled: data.redirectEnabled,
-              telegram_url: data.telegramUrl,
-              web_url: data.webUrl,
-            };
-          });
-          
-          const { data: retryData, error: retryError } = await supabase
-            .from('links')
-            .insert(retryLinks)
-            .select('slug');
-          
-          if (retryError) {
-            console.error(`Batch ${batchIndex + 1} retry failed:`, retryError);
-            // Continue với batch tiếp theo thay vì fail toàn bộ
-            continue;
-          }
-          
-          const batchCreated = retryData?.length || 0;
-          totalCreated += batchCreated;
-          allCreatedSlugs.push(...retryLinks.map(l => l.slug));
-          console.log(`Batch ${batchIndex + 1} retry success: ${batchCreated} links`);
-        } else {
-          // Lỗi khác, continue
-          console.error(`Batch ${batchIndex + 1} failed, continuing...`);
-          continue;
-        }
-      } else {
-        const batchCreated = insertedData?.length || 0;
-        totalCreated += batchCreated;
-        allCreatedSlugs.push(...linksToCreate.map(l => l.slug));
-        console.log(`Batch ${batchIndex + 1} success: ${batchCreated} links`);
+        console.error(`Batch ${batchIndex + 1} error:`, error.message);
+        return { success: false, count: 0, slugs: [] };
       }
-    }
+
+      console.log(`Batch ${batchIndex + 1} success: ${insertedData?.length || 0} links`);
+      return { 
+        success: true, 
+        count: insertedData?.length || 0, 
+        slugs: linksToCreate.map(l => l.slug) 
+      };
+    });
+
+    // Đợi tất cả batches hoàn thành
+    const results = await Promise.all(batchPromises);
+    
+    const totalCreated = results.reduce((sum, r) => sum + r.count, 0);
+    const allCreatedSlugs = results.flatMap(r => r.slugs);
 
     console.log(`Total created: ${totalCreated}/${totalLinks} links`);
 
+    // Chỉ revalidate list page
     revalidatePath('/links');
     
     return { 

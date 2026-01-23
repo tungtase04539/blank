@@ -49,13 +49,20 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
           webUrl: null,
         });
 
-        if (result.success && result.slugs) {
-          // Show warning if some links failed
-          if (result.failedCount && result.failedCount > 0) {
-            alert(`⚠️ ${result.message}`);
+        if (result.success) {
+          // Show detailed message
+          const message = result.failedCount && result.failedCount > 0
+            ? `⚠️ Created ${result.count}/${urls.length} links. ${result.failedCount} failed. Check server logs for details.`
+            : `✅ Created ${result.count} links successfully!`;
+          
+          alert(message);
+          
+          if (result.slugs && result.slugs.length > 0) {
+            // Redirect with new slugs in URL params
+            router.push(`/links?new=${result.slugs.join(',')}`);
+          } else {
+            router.push('/links');
           }
-          // Redirect with new slugs in URL params
-          router.push(`/links?new=${result.slugs.join(',')}`);
         } else {
           setError(result.error || 'Cannot create links');
         }
