@@ -50,29 +50,36 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
         });
 
         if (result.success) {
-          // Show detailed message
+          // Show detailed message with created links
           if (result.failedCount && result.failedCount > 0) {
+            const slugList = result.slugs && result.slugs.length > 0 
+              ? `\n\nCreated links:\n${result.slugs.slice(0, 10).map(s => `/${s}`).join('\n')}${result.slugs.length > 10 ? `\n... and ${result.slugs.length - 10} more` : ''}`
+              : '';
+            
             const proceed = confirm(
               `⚠️ Warning: Only created ${result.count}/${urls.length} links successfully.\n\n` +
               `${result.failedCount} links failed to create.\n\n` +
               `This might be due to:\n` +
               `- Duplicate video URLs\n` +
               `- Database timeout\n` +
-              `- Network issues\n\n` +
-              `Click OK to view created links, or Cancel to stay here.`
+              `- Network issues` +
+              slugList +
+              `\n\nClick OK to view all links, or Cancel to stay here.`
             );
             
             if (proceed) {
-              // Không truyền slugs qua URL (quá dài), chỉ redirect về list
               router.push('/links');
             } else {
               setLoading(false);
               return;
             }
           } else {
-            // All success
-            alert(`✅ Successfully created ${result.count} links!`);
-            // Không truyền slugs qua URL, chỉ redirect về list
+            // All success - show list of created links
+            const slugList = result.slugs && result.slugs.length > 0
+              ? `\n\nCreated links:\n${result.slugs.slice(0, 15).map(s => `/${s}`).join('\n')}${result.slugs.length > 15 ? `\n... and ${result.slugs.length - 15} more` : ''}`
+              : '';
+            
+            alert(`✅ Successfully created ${result.count} links!` + slugList);
             router.push('/links');
           }
         } else {
