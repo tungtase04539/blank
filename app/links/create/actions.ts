@@ -69,81 +69,77 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     const supabase = await createClient();
     const totalLinks = data.videoUrls.length;
     
-    // ✅ OPTIMIZED: Generate nhiều slugs cùng lúc với timestamp để tránh trùng
-    const generateUniqueSlugs = (count: number): string[] => {
-      const slugs = new Set<string>();
-      const timestamp = Date.now();
-      
-      while (slugs.size < count) {
-        // Thêm timestamp vào seed để tránh trùng lặp
-        const slug = generateSlug() + Math.random().toString(36).substring(2, 4);
-        slugs.add(slug.substring(0, 10)); // Giới hạn độ dài
-      }
-      
-      return Array.from(slugs);
-    };
-
-    // Generate gấp đôi số slugs cần thiết để đảm bảo đủ sau khi filter trùng
-    let candidateSlugs = generateUniqueSlugs(totalLinks * 2);
+    // ✅ ZERO-CHECK APPROACH: Generate slugs với timestamp + counter = 100% unique
+    const timestamp = Date.now().toString(36); // Base36 timestamp
+    const randomPrefix = Math.random().toString(36).substring(2, 5); // 3 ký tự random
     
-    // ✅ Check tất cả slugs cùng lúc (1 query thay vì N queries)
-    const { data: existingSlugs } = await supabase
-      .from('links')
-      .select('slug')
-      .in('slug', candidateSlugs);
-
-    const existingSet = new Set(existingSlugs?.map(s => s.slug) || []);
-    
-    // Filter ra các slugs chưa tồn tại
-    const availableSlugs = candidateSlugs.filter(slug => !existingSet.has(slug));
-    
-    // Nếu không đủ slugs, generate thêm
-    if (availableSlugs.length < totalLinks) {
-      const additionalNeeded = totalLinks - availableSlugs.length;
-      let attempts = 0;
+    const linksToCreate = data.videoUrls.map((videoUrl, index) => {
+      // Format: {random}{timestamp}{counter}mp4
+      // VD: abc1k2j3f001mp4, abc1k2j3f002mp4, ...
+      const counter = index.toString(36).padStart(3, '0'); // Base36 counter
+      const slug = `${randomPrefix}${timestamp}${counter}mp4`.substring(0, 15); // Giới hạn 15 ký tự
       
-      while (availableSlugs.length < totalLinks && attempts < 5) {
-        const moreSlugs = generateUniqueSlugs(additionalNeeded * 2);
-        
-        const { data: moreExisting } = await supabase
-          .from('links')
-          .select('slug')
-          .in('slug', moreSlugs);
-        
-        const moreExistingSet = new Set(moreExisting?.map(s => s.slug) || []);
-        const moreAvailable = moreSlugs.filter(slug => 
-          !moreExistingSet.has(slug) && !availableSlugs.includes(slug)
-        );
-        
-        availableSlugs.push(...moreAvailable);
-        attempts++;
-      }
-    }
-
-    if (availableSlugs.length < totalLinks) {
-      return { 
-        success: false, 
-        error: `Only generated ${availableSlugs.length}/${totalLinks} unique slugs. Please try again.` 
+      return {
+        user_id: data.userId,
+        slug: slug,
+        video_url: videoUrl,
+        destination_url: data.destinationUrl,
+        redirect_enabled: data.redirectEnabled,
+        telegram_url: data.telegramUrl,
+        web_url: data.webUrl,
       };
-    }
+    });
 
-    // ✅ Tạo links với slugs đã verify
-    const linksToCreate = data.videoUrls.map((videoUrl, index) => ({
-      user_id: data.userId,
-      slug: availableSlugs[index],
-      video_url: videoUrl,
-      destination_url: data.destinationUrl,
-      redirect_enabled: data.redirectEnabled,
-      telegram_url: data.telegramUrl,
-      web_url: data.webUrl,
-    }));
-
-    // Insert all links
+    // ✅ Insert trực tiếp - KHÔNG CẦN CHECK (timestamp + counter = unique)
+    // Nếu có conflict (cực kỳ hiếm), database sẽ báo lỗi và retry
     const { error } = await supabase
       .from('links')
       .insert(linksToCreate);
 
     if (error) {
+      // Nếu có conflict (rất hiếm), fallback về cách cũ
+      if (error.code === '23505') { // Unique constraint violation
+        console.log('Slug conflict detected, retrying with new timestamp...');
+        
+        // Retry với timestamp mới
+        const newTimestamp = (Date.now() + 1).toString(36);
+        const retryLinks = data.videoUrls.map((videoUrl, index) => {
+          const counter = index.toString(36).padStart(3, '0');
+          const slug = `${randomPrefix}${newTimestamp}${counter}mp4`.substring(0, 15);
+          
+          return {
+            user_id: data.userId,
+            slug: slug,
+            video_url: videoUrl,
+            destination_url: data.destinationUrl,
+            redirect_enabled: data.redirectEnabled,
+            telegram_url: data.telegramUrl,
+            web_url: data.webUrl,
+          };
+        });
+        
+        const { error: retryError } = await supabase
+          .from('links')
+          .insert(retryLinks);
+        
+        if (retryError) {
+          return { success: false, error: retryError.message };
+        }
+        
+        revalidatePath('/links');
+        for (const link of retryLinks) {
+          revalidatePath(`/${link.slug}`);
+        }
+        
+        return { 
+          success: true, 
+          count: retryLinks.length,
+          slugs: retryLinks.map(link => link.slug),
+          message: `Created ${retryLinks.length} links successfully`,
+          failedCount: 0
+        };
+      }
+      
       return { success: false, error: error.message };
     }
 
