@@ -59,14 +59,16 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
         if (result.success) {
           // Show result modal with all links
           setResultData({
-            count: result.count,
+            count: result.count || 0,
             total: urls.length,
             slugs: result.slugs || [],
             failedCount: result.failedCount || 0
           });
           setShowResultModal(true);
+          setLoading(false);
         } else {
           setError(result.error || 'Cannot create links');
+          setLoading(false);
         }
       } else {
         // Single link
