@@ -17,6 +17,13 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
   const [redirectEnabled, setRedirectEnabled] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultData, setResultData] = useState<{
+    count: number;
+    total: number;
+    slugs: string[];
+    failedCount: number;
+  } | null>(null);
 
   // Auto-generate slug on mount
   useEffect(() => {
@@ -50,38 +57,14 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
         });
 
         if (result.success) {
-          // Show detailed message with created links
-          if (result.failedCount && result.failedCount > 0) {
-            const slugList = result.slugs && result.slugs.length > 0 
-              ? `\n\nCreated links:\n${result.slugs.slice(0, 10).map(s => `/${s}`).join('\n')}${result.slugs.length > 10 ? `\n... and ${result.slugs.length - 10} more` : ''}`
-              : '';
-            
-            const proceed = confirm(
-              `⚠️ Warning: Only created ${result.count}/${urls.length} links successfully.\n\n` +
-              `${result.failedCount} links failed to create.\n\n` +
-              `This might be due to:\n` +
-              `- Duplicate video URLs\n` +
-              `- Database timeout\n` +
-              `- Network issues` +
-              slugList +
-              `\n\nClick OK to view all links, or Cancel to stay here.`
-            );
-            
-            if (proceed) {
-              router.push('/links');
-            } else {
-              setLoading(false);
-              return;
-            }
-          } else {
-            // All success - show list of created links
-            const slugList = result.slugs && result.slugs.length > 0
-              ? `\n\nCreated links:\n${result.slugs.slice(0, 15).map(s => `/${s}`).join('\n')}${result.slugs.length > 15 ? `\n... and ${result.slugs.length - 15} more` : ''}`
-              : '';
-            
-            alert(`✅ Successfully created ${result.count} links!` + slugList);
-            router.push('/links');
-          }
+          // Show result modal with all links
+          setResultData({
+            count: result.count,
+            total: urls.length,
+            slugs: result.slugs || [],
+            failedCount: result.failedCount || 0
+          });
+          setShowResultModal(true);
         } else {
           setError(result.error || 'Cannot create links');
         }
@@ -115,8 +98,73 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
     setSlug(generateSlug());
   };
 
+  const handleCloseModal = () => {
+    setShowResultModal(false);
+    router.push('/links');
+  };
+
+  const handleCopyLinks = () => {
+    if (resultData && resultData.slugs.length > 0) {
+      const domain = window.location.origin;
+      const links = resultData.slugs.map(s => `${domain}/${s}`).join('\n');
+      navigator.clipboard.writeText(links);
+      alert('✅ Copied all links to clipboard!');
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      {/* Result Modal */}
+      {showResultModal && resultData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+            {/* Header */}
+            <div className="p-6 border-b">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {resultData.failedCount > 0 ? '⚠️ Partially Created' : '✅ Successfully Created'}
+              </h2>
+              <p className="text-gray-600 mt-2">
+                Created {resultData.count} out of {resultData.total} links
+                {resultData.failedCount > 0 && ` (${resultData.failedCount} failed)`}
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 flex-1 overflow-auto">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Created Links ({resultData.slugs.length})
+              </label>
+              <textarea
+                readOnly
+                value={resultData.slugs.map(s => `${window.location.origin}/${s}`).join('\n')}
+                className="w-full h-64 p-3 border border-gray-300 rounded-lg font-mono text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onClick={(e) => e.currentTarget.select()}
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Click textarea to select all, or use Copy button below
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t flex gap-3">
+              <button
+                onClick={handleCopyLinks}
+                className="btn btn-secondary flex-1"
+              >
+                📋 Copy All Links
+              </button>
+              <button
+                onClick={handleCloseModal}
+                className="btn btn-primary flex-1"
+              >
+                View in Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-2">
           Slug (Short URL) - Auto-generated *
@@ -240,5 +288,6 @@ export default function CreateLinkForm({ userId }: CreateLinkFormProps) {
         </button>
       </div>
     </form>
+    </>
   );
 }
