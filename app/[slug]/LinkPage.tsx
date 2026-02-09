@@ -295,18 +295,6 @@ export default function LinkPage({ link, scripts, globalSettings, redirectUrls, 
       })}
       
       <div className="min-h-screen bg-black flex flex-col relative">
-        {/* ✨ Sparkle CTA Banner - Top Center */}
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center py-3 px-4 bg-gradient-to-r from-black/80 via-purple-900/50 to-black/80 backdrop-blur-sm">
-          <div className="float-animation flex items-center gap-2 text-center">
-            <span className="sparkle-star text-yellow-400 text-lg">✨</span>
-            <p className="text-base md:text-lg font-bold">
-              <span className="sparkle-banner">🔥 NEW: Fap House - </span>
-              <span className="sparkle-link font-extrabold">Unlimited 4K from 50+ countries</span>
-              <span className="free-badge">FREE</span>
-            </p>
-            <span className="sparkle-star text-yellow-400 text-lg">✨</span>
-          </div>
-        </div>
 
         {/* 🎲 Random Video Button - Fixed Top Right */}
         <button
