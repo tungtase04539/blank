@@ -3,9 +3,12 @@ import { notFound } from 'next/navigation';
 import LinkPage from './LinkPage';
 import Script from 'next/script';
 
-// ✅ Force dynamic để luôn fetch data mới (debug)
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// ✅ EDGE RUNTIME = FREE invocations (nằm trong free tier 10M/tháng)
+export const runtime = 'edge';
+
+// ✅ ISR: Cache page 60s, giảm ~99% function invocations
+// Mỗi slug chỉ gọi function 1 lần/phút thay vì mỗi lượt truy cập
+export const revalidate = 60;
 export const dynamicParams = true; // Cho phép generate pages mới
 
 interface PageProps {
