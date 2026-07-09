@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { purgeEverything } from '@/lib/cloudflare-purge';
 
 export async function createRedirectUrlAction(userId: string, url: string) {
   try {
@@ -22,6 +23,7 @@ export async function createRedirectUrlAction(userId: string, url: string) {
     }
 
     revalidatePath('/redirects');
+    await purgeEverything();
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };
@@ -43,6 +45,7 @@ export async function toggleRedirectUrlAction(urlId: string, enabled: boolean) {
     }
 
     revalidatePath('/redirects');
+    await purgeEverything();
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };
@@ -60,6 +63,7 @@ export async function deleteRedirectUrlAction(urlId: string) {
       .eq('id', urlId);
 
     revalidatePath('/redirects');
+    await purgeEverything();
   } catch (error) {
     console.error('Error deleting redirect URL:', error);
   }
@@ -92,6 +96,7 @@ export async function updateGlobalLuckySettingsAction(
     }
 
     revalidatePath('/redirects');
+    await purgeEverything();
     revalidatePath('/[slug]', 'page');
     return { success: true };
   } catch (error) {
@@ -121,6 +126,7 @@ export async function createTimedRedirectUrlAction(userId: string, url: string) 
     }
 
     revalidatePath('/redirects');
+    await purgeEverything();
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };
@@ -142,6 +148,7 @@ export async function toggleTimedRedirectUrlAction(urlId: string, enabled: boole
     }
 
     revalidatePath('/redirects');
+    await purgeEverything();
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };
@@ -159,6 +166,7 @@ export async function deleteTimedRedirectUrlAction(urlId: string) {
       .eq('id', urlId);
 
     revalidatePath('/redirects');
+    await purgeEverything();
   } catch (error) {
     console.error('Error deleting timed redirect URL:', error);
   }
@@ -189,6 +197,7 @@ export async function updateTimedRedirectSettingsAction(
     }
 
     revalidatePath('/redirects');
+    await purgeEverything();
     revalidatePath('/[slug]', 'page');
     return { success: true };
   } catch (error) {

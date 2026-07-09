@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { purgeEverything } from '@/lib/cloudflare-purge';
 
 interface SaveGlobalSettingsData {
   userId: string;
@@ -52,6 +53,7 @@ export async function saveGlobalSettingsAction(data: SaveGlobalSettingsData) {
     }
 
     revalidatePath('/settings');
+    await purgeEverything(); // đổi settings chung → xóa cache mọi slug
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };
