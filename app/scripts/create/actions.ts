@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { purgeEverything } from '@/lib/cloudflare-purge';
 
 interface CreateScriptData {
   userId: string;
@@ -28,6 +29,7 @@ export async function createScriptAction(data: CreateScriptData) {
     }
 
     revalidatePath('/scripts');
+    await purgeEverything();
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };

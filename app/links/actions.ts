@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { purgeSlugs } from '@/lib/cloudflare-purge';
 
 export async function deleteLinkAction(linkId: string) {
   const user = await requireAuth();
@@ -26,6 +27,7 @@ export async function deleteLinkAction(linkId: string) {
   // Revalidate public page
   if (link?.slug) {
     revalidatePath(`/${link.slug}`);
+    await purgeSlugs([link.slug]);
   }
 }
 
@@ -51,5 +53,6 @@ export async function toggleRedirectAction(linkId: string, enabled: boolean) {
   // Revalidate public page
   if (link?.slug) {
     revalidatePath(`/${link.slug}`);
+    await purgeSlugs([link.slug]);
   }
 }

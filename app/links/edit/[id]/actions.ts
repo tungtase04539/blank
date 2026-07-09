@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
+import { purgeSlugs } from '@/lib/cloudflare-purge';
 
 interface UpdateLinkData {
   linkId: string;
@@ -35,7 +36,18 @@ export async function updateLinkAction(data: UpdateLinkData) {
       return { success: false, error: error.message };
     }
 
+    // Lấy slug để purge đúng trang đó trên Cloudflare
+    const { data: link } = await supabase
+      .from('links')
+      .select('slug')
+      .eq('id', data.linkId)
+      .single();
+
     revalidatePath('/links');
+    if (link?.slug) {
+      revalidatePath(`/${link.slug}`);
+      await purgeSlugs([link.slug]);
+    }
     return { success: true };
   } catch (error) {
     return { success: false, error: 'An error occurred' };
