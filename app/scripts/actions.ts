@@ -1,13 +1,13 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { purgeEverything } from '@/lib/cloudflare-purge';
 
 export async function deleteScriptAction(scriptId: string) {
   const user = await requireAuth();
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   await supabase
     .from('scripts')
@@ -21,7 +21,7 @@ export async function deleteScriptAction(scriptId: string) {
 
 export async function toggleScriptAction(scriptId: string, enabled: boolean) {
   const user = await requireAuth();
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   await supabase
     .from('scripts')

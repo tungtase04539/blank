@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin, hashPassword } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
@@ -13,7 +13,7 @@ interface CreateUserData {
 export async function createUserAction(data: CreateUserData) {
   try {
     await requireAdmin();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check if user exists
     const { data: existing } = await supabase
@@ -52,7 +52,7 @@ export async function createUserAction(data: CreateUserData) {
 export async function deleteUserAction(userId: string) {
   try {
     await requireAdmin();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     await supabase
       .from('users')

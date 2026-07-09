@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import bcrypt from 'bcryptjs';
 
 export async function getSession() {
@@ -14,7 +15,8 @@ export async function getUserFromSession() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user?.email) return null;
 
-  const { data: user } = await supabase
+  // Đọc bảng users bằng service_role (RLS đã chặn anon đọc password_hash)
+  const { data: user } = await createAdminClient()
     .from('users')
     .select('*')
     .eq('email', session.user.email)
@@ -44,8 +46,8 @@ export async function login(email: string, password: string) {
 
   console.log('🔐 Login attempt for:', email);
 
-  // Get user from database
-  const { data: user, error } = await supabase
+  // Get user from database bằng service_role (RLS chặn anon đọc users)
+  const { data: user, error } = await createAdminClient()
     .from('users')
     .select('*')
     .eq('email', email)

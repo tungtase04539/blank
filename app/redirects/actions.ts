@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { purgeEverything } from '@/lib/cloudflare-purge';
@@ -8,7 +8,7 @@ import { purgeEverything } from '@/lib/cloudflare-purge';
 export async function createRedirectUrlAction(userId: string, url: string) {
   try {
     await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
       .from('redirect_urls')
@@ -33,7 +33,7 @@ export async function createRedirectUrlAction(userId: string, url: string) {
 export async function toggleRedirectUrlAction(urlId: string, enabled: boolean) {
   try {
     await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
       .from('redirect_urls')
@@ -55,7 +55,7 @@ export async function toggleRedirectUrlAction(urlId: string, enabled: boolean) {
 export async function deleteRedirectUrlAction(urlId: string) {
   try {
     await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     await supabase
       .from('redirect_urls')
@@ -75,7 +75,7 @@ export async function updateGlobalLuckySettingsAction(
 ) {
   try {
     const user = await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Use UPSERT to support both new accounts (INSERT) and existing accounts (UPDATE)
     const { error } = await supabase
@@ -111,7 +111,7 @@ export async function updateGlobalLuckySettingsAction(
 export async function createTimedRedirectUrlAction(userId: string, url: string) {
   try {
     await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
       .from('timed_redirect_urls')
@@ -136,7 +136,7 @@ export async function createTimedRedirectUrlAction(userId: string, url: string) 
 export async function toggleTimedRedirectUrlAction(urlId: string, enabled: boolean) {
   try {
     await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
       .from('timed_redirect_urls')
@@ -158,7 +158,7 @@ export async function toggleTimedRedirectUrlAction(urlId: string, enabled: boole
 export async function deleteTimedRedirectUrlAction(urlId: string) {
   try {
     await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     await supabase
       .from('timed_redirect_urls')
@@ -178,7 +178,7 @@ export async function updateTimedRedirectSettingsAction(
 ) {
   try {
     const user = await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
       .from('global_settings')

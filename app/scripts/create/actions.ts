@@ -1,6 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { purgeEverything } from '@/lib/cloudflare-purge';
 
@@ -13,12 +14,13 @@ interface CreateScriptData {
 
 export async function createScriptAction(data: CreateScriptData) {
   try {
-    const supabase = await createClient();
+    const user = await requireAuth();
+    const supabase = createAdminClient();
 
     const { error } = await supabase
       .from('scripts')
       .insert({
-        user_id: data.userId,
+        user_id: user.id,
         location: data.location,
         content: data.content,
         enabled: data.enabled,
@@ -35,4 +37,3 @@ export async function createScriptAction(data: CreateScriptData) {
     return { success: false, error: 'An error occurred' };
   }
 }
-

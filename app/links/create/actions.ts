@@ -1,8 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
-import { generateSlug } from '@/lib/utils';
 
 interface CreateLinkData {
   userId: string;
@@ -25,7 +25,8 @@ interface CreateMultiLinksData {
 
 export async function createLinkAction(data: CreateLinkData) {
   try {
-    const supabase = await createClient();
+    const user = await requireAuth();
+    const supabase = createAdminClient();
 
     // Check if slug already exists
     const { data: existing } = await supabase
@@ -38,11 +39,11 @@ export async function createLinkAction(data: CreateLinkData) {
       return { success: false, error: 'This slug is already in use' };
     }
 
-    // Create link
+    // Create link — user_id lấy từ SESSION (không tin userId từ client)
     const { error } = await supabase
       .from('links')
       .insert({
-        user_id: data.userId,
+        user_id: user.id,
         slug: data.slug,
         video_url: data.videoUrl,
         destination_url: data.destinationUrl,
@@ -66,37 +67,38 @@ export async function createLinkAction(data: CreateLinkData) {
 
 export async function createMultiLinksAction(data: CreateMultiLinksData) {
   try {
-    const supabase = await createClient();
+    const user = await requireAuth();
+    const supabase = createAdminClient();
     const totalLinks = data.videoUrls.length;
-    
+
     console.log(`Creating ${totalLinks} links...`);
-    
+
     // ✅ PARALLEL BATCH INSERT: Insert nhiều batches cùng lúc
     const BATCH_SIZE = 25; // 25 links mỗi batch
     const batches: string[][] = [];
-    
+
     // Chia thành batches
     for (let i = 0; i < totalLinks; i += BATCH_SIZE) {
       batches.push(data.videoUrls.slice(i, i + BATCH_SIZE));
     }
-    
+
     console.log(`Split into ${batches.length} batches`);
-    
+
     const baseTimestamp = Date.now();
     const sessionRandom = Math.random().toString(36).substring(2, 5);
-    
+
     // Insert tất cả batches song song
     const batchPromises = batches.map(async (batchUrls, batchIndex) => {
       const startIndex = batchIndex * BATCH_SIZE;
-      
+
       const linksToCreate = batchUrls.map((videoUrl, idx) => {
         const globalIndex = startIndex + idx;
         const indexChars = globalIndex.toString(36).padStart(2, '0');
         const timeChars = ((baseTimestamp + globalIndex * 7) % 46656).toString(36).padStart(3, '0');
         const slug = `${sessionRandom}${indexChars}${timeChars}mp4`;
-        
+
         return {
-          user_id: data.userId,
+          user_id: user.id,
           slug: slug,
           video_url: videoUrl,
           destination_url: data.destinationUrl,
@@ -117,16 +119,16 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
       }
 
       console.log(`Batch ${batchIndex + 1} success: ${insertedData?.length || 0} links`);
-      return { 
-        success: true, 
-        count: insertedData?.length || 0, 
-        slugs: linksToCreate.map(l => l.slug) 
+      return {
+        success: true,
+        count: insertedData?.length || 0,
+        slugs: linksToCreate.map(l => l.slug)
       };
     });
 
     // Đợi tất cả batches hoàn thành
     const results = await Promise.all(batchPromises);
-    
+
     const totalCreated = results.reduce((sum, r) => sum + r.count, 0);
     const allCreatedSlugs = results.flatMap(r => r.slugs);
     const failedCount = totalLinks - totalCreated;
@@ -134,19 +136,19 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     console.log(`✅ Batch results:`, results.map((r, i) => `Batch ${i+1}: ${r.count} links`));
     console.log(`✅ Total created: ${totalCreated}/${totalLinks} links`);
     console.log(`✅ Total slugs: ${allCreatedSlugs.length}`);
-    
+
     if (failedCount > 0) {
       console.error(`❌ Failed: ${failedCount} links`);
     }
 
     // Chỉ revalidate list page
     revalidatePath('/links');
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       count: totalCreated,
       slugs: allCreatedSlugs,
-      message: totalCreated === totalLinks 
+      message: totalCreated === totalLinks
         ? `Created ${totalCreated} links successfully`
         : `Created ${totalCreated}/${totalLinks} links (${failedCount} failed)`,
       failedCount: failedCount
@@ -156,4 +158,3 @@ export async function createMultiLinksAction(data: CreateMultiLinksData) {
     return { success: false, error: `An error occurred: ${error}` };
   }
 }
-

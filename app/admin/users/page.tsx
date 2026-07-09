@@ -1,12 +1,12 @@
 import { requireAdmin } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import Navbar from '@/components/Navbar';
 import UsersList from './UsersList';
 
 export const dynamic = 'force-dynamic';
 
 async function getUsers() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   const { data: users } = await supabase
     .from('users')
