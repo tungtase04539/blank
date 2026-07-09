@@ -51,13 +51,13 @@ export default function RedirectsList({ urls, timedUrls, userId, globalSettings 
   
   // Lucky settings state
   const [luckyEnabled, setLuckyEnabled] = useState(globalSettings?.lucky_enabled || false);
-  const [luckyPercentage, setLuckyPercentage] = useState(globalSettings?.lucky_percentage || 10);
+  const [luckyPercentage, setLuckyPercentage] = useState(globalSettings?.lucky_percentage ?? 10);
   const [luckyType, setLuckyType] = useState<'random' | 'daily'>(globalSettings?.lucky_type || 'random');
   const [luckyLoading, setLuckyLoading] = useState(false);
 
   // ⏱️ Timed redirect settings state
   const [timedEnabled, setTimedEnabled] = useState(globalSettings?.timed_redirect_enabled || false);
-  const [timedDelay, setTimedDelay] = useState(globalSettings?.timed_redirect_delay || 5);
+  const [timedDelay, setTimedDelay] = useState(globalSettings?.timed_redirect_delay ?? 5);
   const [timedLoading, setTimedLoading] = useState(false);
   const [showTimedForm, setShowTimedForm] = useState(false);
   const [newTimedUrl, setNewTimedUrl] = useState('');
