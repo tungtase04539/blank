@@ -1,13 +1,13 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { purgeSlugs } from '@/lib/cloudflare-purge';
 
 export async function deleteLinkAction(linkId: string) {
   const user = await requireAuth();
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   // Lấy slug trước khi xóa để revalidate
   const { data: link } = await supabase
@@ -33,7 +33,7 @@ export async function deleteLinkAction(linkId: string) {
 
 export async function toggleRedirectAction(linkId: string, enabled: boolean) {
   const user = await requireAuth();
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   
   // Lấy slug để revalidate
   const { data: link } = await supabase

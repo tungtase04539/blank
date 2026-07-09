@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { purgeEverything } from '@/lib/cloudflare-purge';
@@ -14,7 +14,7 @@ interface SaveGlobalSettingsData {
 export async function saveGlobalSettingsAction(data: SaveGlobalSettingsData) {
   try {
     await requireAuth();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Check if settings exist
     const { data: existing } = await supabase
